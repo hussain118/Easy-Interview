@@ -12,7 +12,7 @@ venv/
 .DS_Store
 node_modules/
 .claude/
-# Consent records: candidate PII, session-specific runtime state — not a
-# fixed-schema graded deliverable, so never committed (unlike output/prep,
-# scorecard.json, transcript.json, report.pdf).
+data/
 output/consent/
+output/server.log
+output/server.err.log
