@@ -1,0 +1,109 @@
+{
+  "turns": [
+    {
+      "speaker": "agent",
+      "text": "Hi Test Candidate, thanks for joining. I'm an AI interviewer conducting this interview for the Junior AI Engineer position \u2014 to be transparent, you're speaking with an AI, not a human. We'll spend some time on your background, the role, and your projects. Let's get started.",
+      "timestamp_ms": 1786704417875,
+      "node": "intro",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Tell me about your REST API project.",
+      "timestamp_ms": 1786704417875,
+      "node": "resume_probe",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "I built a FastAPI service with JWT auth and Postgres for storage, deployed on Render.",
+      "timestamp_ms": 1786704417885,
+      "node": "resume_probe",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "How would you design a RAG pipeline?",
+      "timestamp_ms": 1786704420834,
+      "node": "jd_fit",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "I'd chunk documents by paragraph with overlap, embed with a sentence-transformer model, store in a vector DB like Chroma, and retrieve top-k with a similarity threshold.",
+      "timestamp_ms": 1786704420844,
+      "node": "jd_fit",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Tell me about repo:encode/databases",
+      "timestamp_ms": 1786704422405,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "I looked at the databases repo's setup.py \u2014 it's a Python async database toolkit, I'd want to check how it handles connection pooling.",
+      "timestamp_ms": 1786704422423,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Can you go a level deeper on that?",
+      "timestamp_ms": 1786704423706,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "No questions from me, thanks.",
+      "timestamp_ms": 1786704423714,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Let's bring it back to the question: Tell me about repo:encode/databases",
+      "timestamp_ms": 1786704425277,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "",
+      "timestamp_ms": 1786704425295,
+      "node": "github_deepdive",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Before we wrap up \u2014 do you have any questions for me about the role or the team?",
+      "timestamp_ms": 1786704425295,
+      "node": "candidate_questions",
+      "interrupted": false
+    },
+    {
+      "speaker": "candidate",
+      "text": "",
+      "timestamp_ms": 1786704425307,
+      "node": "candidate_questions",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "Good question \u2014 the recruiting team will follow up on that after the interview.",
+      "timestamp_ms": 1786704425307,
+      "node": "candidate_questions",
+      "interrupted": false
+    },
+    {
+      "speaker": "agent",
+      "text": "That's all the questions I have, Test Candidate. Thanks so much for your time today \u2014 we'll be in touch with next steps soon.",
+      "timestamp_ms": 1786704425307,
+      "node": "wrap_up",
+      "interrupted": false
+    }
+  ]
+}

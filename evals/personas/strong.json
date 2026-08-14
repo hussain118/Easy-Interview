@@ -1,0 +1,34 @@
+{
+  "persona": "strong",
+  "expected": "Highest score, hire, high confidence",
+  "turns": [
+    {
+      "competency": "backend",
+      "source": "resume",
+      "source_reference": "",
+      "text": "Tell me about your RAG project — walk me through the architecture.",
+      "answer": "I built a RAG service that indexes internal docs — chunked by paragraph with 200-token overlap, embedded with all-MiniLM-L6-v2, stored in Chroma, and I added a re-ranking step with a cross-encoder because pure cosine similarity was pulling near-duplicate chunks. The one thing I'd change is I never added eval metrics beyond manual spot-checking — I'd add RAGAS scoring if I did it again."
+    },
+    {
+      "competency": "rag",
+      "source": "jd",
+      "source_reference": "",
+      "text": "How do you decide on a chunking strategy for a RAG pipeline?",
+      "answer": "It depends on document structure — for structured docs I chunk by section headers, for prose I use paragraph-based chunking with about 15% overlap so context isn't cut mid-sentence at boundaries. I benchmark retrieval precision on a held-out query set before committing to a chunk size."
+    },
+    {
+      "competency": "python",
+      "source": "github",
+      "source_reference": "repo:candidate/rag-service, commit:add overlap to chunker",
+      "text": "I see a commit 'add overlap to chunker' in your rag-service repo — walk me through why you added that.",
+      "answer": "Right — I added overlap because without it, answers that spanned a paragraph boundary were getting split across two chunks and neither had enough context alone. I tested with and without overlap on a set of boundary-spanning questions and precision went up about 12%."
+    },
+    {
+      "competency": "debugging",
+      "source": "scenario",
+      "source_reference": "",
+      "text": "Your RAG pipeline suddenly starts returning irrelevant results in production — how do you debug it?",
+      "answer": "First I'd check if it's a retrieval problem or a generation problem — pull the raw retrieved chunks for a failing query and see if they're actually relevant. If retrieval is fine, it's a prompting/generation issue. If retrieval is bad, I'd check if the embedding model or index got swapped, or if new documents were ingested with a different chunking config than what's in production."
+    }
+  ]
+}

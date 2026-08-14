@@ -12,16 +12,16 @@ phases. Nothing below is claimed as working unless it's under
 
 | Component | Role | Status |
 |---|---|---|
-| **GPT (via OpenRouter)** | Offline analysis/reasoning: JD/resume/GitHub parsing, gap analysis, question planning, and — live — the *only* thing that grades a candidate answer (quality/confidence/reason). Structured with a stable, cacheable system-prompt prefix. | **Implemented.** Final competency scoring (scorecard.json) is not yet. |
+| **GPT (via OpenRouter)** | Offline analysis/reasoning: JD/resume/GitHub parsing, gap analysis, question planning; live per-answer evaluation (quality/confidence/reason); and post-interview final scoring. The *only* thing that grades a candidate, at any stage. Structured with stable, cacheable system-prompt prefixes throughout. | **Implemented**, including final scoring (`src/agents/scorer.py`). |
 | **GitHub REST API** | Real evidence source: repos, languages, READMEs, commits, source-file excerpts for the candidate's actual account. | **Implemented.** |
-| **LangGraph** | Authoritative interview controller: typed state, 10 nodes, multiple conditional edges, adaptive follow-up routing, HITL interrupt, SQLite checkpointer for resume-after-drop. | **Implemented** (`src/graph.py`, `src/nodes/`). Driven turn-by-turn via `interrupt()`/`Command(resume=...)` — see below. Not yet wired to real audio. |
+| **LangGraph** | Authoritative interview controller: typed state, 10 nodes, multiple conditional edges, adaptive follow-up routing, HITL interrupt, SQLite checkpointer for resume-after-drop. | **Implemented** (`src/graph.py`, `src/nodes/`). Driven turn-by-turn via `interrupt()`/`Command(resume=...)`. |
 | **SQLite** | LangGraph checkpointer storage — every node transition is durably saved, so a dropped call resumes at the correct node instead of restarting. | **Implemented** (`langgraph-checkpoint-sqlite`, `src/graph.py::get_sqlite_checkpointer`). |
-| **Python (deterministic guardrails)** | Validation that doesn't depend on the LLM being honest — GitHub-grounding check, banned-question blocking, GPT-evaluation normalization, follow-up cap enforcement, routing decisions. | **Implemented** for all of the above. "No score without a quote" guardrail comes with the scoring phase. |
-| **Gemini Live API** | Real-time interviewer: native audio in/out, built-in interruption/barge-in, conversational voice. Never decides answer quality. | **Implemented** (`livekit_agent/interview_worker.py`, `src/realtime/gemini_live_adapter.py`). Connectivity, audio synthesis, transcription, and session resumption independently verified live. Full audio round-trip through a browser is not verified in this environment (no mic/speaker/browser here) — see "What's verified vs. not" below. |
+| **Python (deterministic guardrails)** | Validation that doesn't depend on the LLM being honest — GitHub-grounding check, banned-question blocking, GPT-evaluation normalization, follow-up cap enforcement, routing decisions, **and evidence-quote verification for every final score**. | **Implemented** for all of the above, including the evidence guardrail (`src/guardrails/evidence_check.py`) — a score without a real transcript quote cannot survive into `scorecard.json`. |
+| **Gemini Live API** | Real-time interviewer: native audio in/out, built-in interruption/barge-in, conversational voice. Never decides answer quality — GPT does, always. | **Implemented** (`livekit_agent/interview_worker.py`, `src/realtime/gemini_live_adapter.py`). Connectivity, audio synthesis, transcription, and session resumption independently verified live. Full audio round-trip through a browser is not verified in this environment (no mic/speaker/browser here) — see "What's verified vs. not" below. |
 | **LiveKit** | Real-time transport: the video/audio room, candidate connection, secure participant access, barge-in/turn-detection plumbing. | **Implemented** (`src/realtime/livekit_room.py`, `src/api.py`). Room creation and token minting verified live against the real LiveKit Cloud project. |
 | **Avatar (2D)** | Visible AI face, simple viseme-style lip-sync driven by the AI's speaking state. | **Implemented, intentionally simple** (`frontend/candidate.html`) — an SVG face whose mouth toggles open/closed based on LiveKit's `ActiveSpeakersChanged` event (real speaking-state signal, not a fixed animation loop, but not per-phoneme viseme sync either). Priority was working voice/barge-in/transport first, per the spec's own stated priority order. |
-| **MCP server** | Future `>=5` tools exposed to Claude Desktop. | **Not implemented** — explicitly out of scope for this phase. |
-| **FastAPI** | Backend API: consent recording, LiveKit token minting, interview status. | **Implemented** (`src/api.py`). No recruiter dashboard UI — recruiter actions are CLI scripts (`run_prep.py`, `run_hitl_approval.py`). |
+| **MCP server** | `>=5` tools exposed to Claude Desktop (get_candidate, get_question_plan, save_score, get_scorecard, list_interviews). | **NOT implemented.** Explicitly excluded from every phase's scope by direct instruction throughout this build. The spec lists it as a core requirement (§3 item 8) — flagging this plainly rather than claiming otherwise. |
+| **FastAPI** | Backend API: consent recording, LiveKit token minting, interview status. | **Implemented** (`src/api.py`). No recruiter dashboard UI — recruiter actions are CLI scripts (`run_prep.py`, `run_hitl_approval.py`, `run_scoring.py`). |
 
 ## Phase 1 data flow (implemented)
 
@@ -265,37 +265,71 @@ microphone and a browser — which this coding environment cannot provide.
 
 ### GPT prompt-caching strategy
 
-Every evaluator request is structured exactly as required:
+Both GPT workloads that repeat structurally — the per-answer evaluator
+and the final scorer — are structured exactly as required:
 
 ```
-STABLE PREFIX (prompts/answer_evaluator.md, byte-identical every call)
-  -> rubric, quality-label definitions, fairness rule, evidence
+STABLE PREFIX (prompts/answer_evaluator.md or prompts/final_scorer.md,
+                byte-identical every call — this is the cache-eligible part)
+  -> role/rubric/quality-or-scoring definitions, fairness rule, evidence
      requirement, guardrail note, output schema description
-DYNAMIC SUFFIX (per-call user message)
+STATIC INTERVIEW CONTEXT (final scorer only — role, competency list,
+                compact resume claims, compact GitHub evidence summary;
+                never the raw repository)
+DYNAMIC SUFFIX (per-call user message, transcript/answer always LAST)
   -> current question + competency + difficulty + evidence reference
      + candidate answer + last few same-topic transcript turns
-     (never the full resume/JD/GitHub JSON, never the full transcript)
+     (evaluator), or per-answer evaluations + full transcript (scorer)
+     — never the full resume/JD/GitHub JSON, never resent redundantly
 ```
 
 `src/providers/openai_client.py::structured_completion_with_usage()`
-passes a fixed `prompt_cache_key="interview-evaluator-v1"` (never
-contains candidate content) and reads back
+passes a fixed `prompt_cache_key` — `"first-round-answer-evaluator-v1"`
+for every evaluator call, `"first-round-final-scorer-v1"` for real-interview
+scoring, `"first-round-persona-scorer-v1"` for the synthetic eval-persona
+runs (kept separate so eval traffic doesn't mix into production cache
+stats) — never containing candidate content, and reads back
 `usage.prompt_tokens_details.cached_tokens` from the response.
 `src/agents/cache_metrics.py::record()` logs
 `{model, purpose, input_tokens, cached_tokens, output_tokens,
 cache_hit_ratio}` per call to `output/cache_metrics.jsonl` — numbers and
 labels only, never candidate text.
 
-**Measured result** (`tests/test_cache_metrics_live.py`, 3 consecutive
-live calls, identical stable prefix, via OpenRouter): `input_tokens`
-totaled 3218 (~1072/call), **`cached_tokens` was 0 on every call.** This
-is a real, reported null result — see `prompts/ITERATION_NOTES.md`
-("evaluator: v1 → v2") for the likely causes (prefix length near the
-automatic-caching threshold; OpenRouter's routing to the underlying
-provider may not surface `prompt_tokens_details.cached_tokens` the way a
-direct `api.openai.com` call would). The caching *structure* is real and
-in place; the *savings* through this specific provider path are not
-proven, and this document does not claim they are.
+**Cross-candidate isolation**: the ONLY thing that's cache-eligible is the
+stable prefix (rubric/schema/instructions, identical for every candidate
+by design). Every candidate's resume claims, GitHub evidence, transcript,
+and answers are sent fresh in the dynamic suffix on every single call —
+never pre-loaded into a shared cache, never persisted across requests
+outside each call's own `messages` array. There is no mechanism in this
+codebase by which one candidate's dynamic content could be reused for
+another candidate; the prefix that *is* shared/cached contains zero
+candidate-specific information by construction.
+
+**Measured result** (real, not invented): an early isolated check
+(`tests/test_cache_metrics_live.py`, 3 back-to-back evaluator calls, v2
+prompt, via OpenRouter) found `cached_tokens = 0` on every call — reported
+honestly at the time. Since then, the evaluator prompt grew (v3's "Jargon
+vs. specificity" section — see `prompts/ITERATION_NOTES.md`) and the
+final scorer's longer stable prefix came online, and both are now reused
+across many real calls in the same session (5-persona evals, direct
+scorer tests). Aggregate of every real call logged so far
+(`src/agents/cache_metrics.py::summarize()` over `output/cache_metrics.jsonl`,
+102 calls total):
+
+| Purpose | Calls | Total input tokens | Total cached tokens | Cache hit ratio |
+|---|---|---|---|---|
+| answer_evaluation | 84 | 124,713 | 61,696 | **49.5%** |
+| final_scoring | 18 | 38,208 | 15,232 | **39.9%** |
+| **overall** | **102** | **162,921** | **76,928** | **47.2%** |
+
+Read honestly: this is a real, substantial, measured cache hit ratio
+achieved through OpenRouter — the earlier 0% result was real too, at that
+point in time, with a shorter prompt and only 3 calls; caching evidently
+became reliable once the stable prefix was long enough and got reused
+enough times in the same session. This table reflects actual accumulated
+usage from this development session, not a controlled/isolated benchmark
+— re-run `python -c "from src.agents.cache_metrics import summarize; print(summarize())"`
+for the current numbers.
 
 ### Gemini Live context/continuity strategy (NOT explicit prompt caching)
 
@@ -332,6 +366,80 @@ context-cache API (that's for the standard `generateContent` API, not
    mechanism; Gemini's own session resumption is a secondary layer on
    top of it, not a substitute for it).
 
+## Phase 4 — Scoring, evidence guardrail, evals, report
+
+### Final scorer
+
+`src/agents/scorer.py::score_interview()` — GPT synthesizes a transcript
++ per-answer evaluations (`InterviewState.evaluation_history`, appended
+by `evaluate_answer_node` on every turn — Phase 2's node, extended
+additively, not rebuilt) into the exact `output/scorecard.json` schema
+from §6. `candidate_name`, `role`, `interview_date`, `duration_seconds`,
+and `github_grounded_questions_asked` are filled deterministically in
+Python — GPT is never asked to state or count them, only to produce
+`competencies`, `overall_score`, `recommendation`,
+`recommendation_reasoning`, `strengths`, `concerns`, `guardrail_flags`.
+`run_scoring.py --interview-id <id>` runs this against a real completed
+interview's own LangGraph checkpoint (never against whatever happens to
+currently be in `output/prep/*.json`, which could belong to a different
+interview by the time scoring runs).
+
+### Evidence guardrail (deterministic, not GPT)
+
+`src/guardrails/evidence_check.py::validate_scorecard_evidence()` — after
+GPT returns a scorecard, every competency's `evidence_quote` is checked
+(whitespace/case-normalized substring match) against the *real*
+transcript. Any competency whose quote doesn't verify is **removed
+entirely** from the scorecard (its score cannot count) and a
+`evidence_guardrail_rejected:<name>:...` flag is added; `overall_score` is
+recalculated from only the surviving competencies. This is not
+theoretical — it fired for real during development (`run_scoring.py`
+against a real generated interview rejected a "python" competency score
+whose quote didn't verify verbatim; see the guardrail_flags in that run).
+
+### Banned-question guardrail
+
+`src/guardrails/banned_questions.py` (built in Phase 3, wired into every
+topic node before a question is ever spoken) — directly unit-tested here
+against all 8 required categories (age, gender, marital status, religion,
+nationality, health/pregnancy, salary history, politics) plus false-positive
+checks against legitimate technical questions (`tests/test_banned_questions.py`,
+14 tests, all passing).
+
+### Five eval personas
+
+`evals/run_evals.py` runs the *real* pipeline (real per-answer GPT
+evaluator for each synthetic answer, then the real GPT final scorer) —
+not a hand-simulated result — against all 5 personas
+(`evals/personas/*.json`) and writes `evals/results.md`. This is where
+the answer_evaluator v2→v3 fix (jargon-vs-specificity, see
+`prompts/ITERATION_NOTES.md`) was actually discovered: the first real run
+scored the Bluffer persona *above* Average, failing the spec's explicit
+"bluffer must land below Average" requirement. After the fix: Strong is
+highest (5.0, hire), Nervous lands near Strong (2.5, borderline — the
+fairness case working as intended), Bluffer correctly drops below Average
+(1.5 vs 2.0). One check still doesn't cleanly pass — Weak (2.0) no longer
+scores as the single lowest persona, since Bluffer's confirmed fabrications
+now score even lower — written up as an honest, arguable edge case in
+`evals/results.md` rather than tuned away to force a clean pass. Full
+scorecards for all 5 personas are in that file.
+
+### Report PDF
+
+`src/agents/report_generator.py` (reportlab, no LLM call) reads
+`output/scorecard.json` and writes `output/report.pdf` — candidate, role,
+duration, every competency's score/quote/reasoning/confidence, strengths,
+concerns, recommendation, GitHub-grounded question count, guardrail
+flags. Redacts anything matching a phone number, street address, or
+national-ID pattern — but only in free-text fields (candidate name,
+reasoning, quotes, strengths/concerns/flags), never in structured fields
+like `interview_date`/scores/counts. That distinction exists because the
+first version over-redacted: a plain ISO date (`2026-08-14`) was being
+caught by the phone-number regex and replaced with `[redacted]` in the
+generated PDF — caught by actually reading the generated PDF, not
+assumed correct (`tests/test_report_generator.py` now covers this
+directly, including a regression test for the exact date-corruption bug).
+
 ## Latency
 
 Target: <1.2s from candidate-stops-speaking to agent-starts-speaking.
@@ -360,10 +468,12 @@ Phase 1 (PREP):
   than silently producing empty output — no OCR fallback is implemented.
 
 Phase 2 (LangGraph controller):
-- `scoring` is a stub node — it finalizes status/timing only. Real
-  per-competency scoring with evidence quotes is a later phase.
-- The "no score without a transcript quote" guardrail isn't implemented
-  yet (no scoring exists to guard).
+- `scoring` (the graph node) still only finalizes status/timing — the
+  real scoring logic lives in the separate `run_scoring.py` step, run
+  after the graph reaches END, not inside the graph itself. This is a
+  deliberate separation (scoring needs the *complete* transcript, and
+  re-running it shouldn't require re-running the interview) but is worth
+  naming plainly since the node's name suggests otherwise.
 - `candidate_questions` allows exactly one candidate-asked question per
   interview (a single exchange), not an open-ended loop.
 - The time-budget safety net (`MAX_INTERVIEW_SECONDS = 1200`) that jumps
@@ -391,9 +501,27 @@ Phase 3 (live call):
   candidate would need to reload the page and rejoin, which the worker
   supports (it resumes from the existing checkpoint) but isn't automated
   client-side.
-- Cache-hit ratio for the GPT evaluator measured 0 in testing (see GPT
-  prompt-caching strategy above) — the structure is correct but the
-  provider path (OpenRouter) hasn't been shown to actually save tokens.
 - The FastAPI backend has no auth on its endpoints (fine for a local/dev
   deployment behind the assignment's scope; would need real auth before
   any actual production use).
+
+Phase 4 (scoring, evals, report):
+- `evals/results.md`'s `weak_is_lowest` check does not cleanly pass — see
+  "Five eval personas" above and the failure analysis in that file for
+  the honest reasoning (a confidently-fabricating Bluffer now scores
+  below an honestly-thin Weak, which is defensible but not what the
+  literal "Weak: Lowest" wording states).
+- The evidence guardrail only verifies a quote is *real* (actually said);
+  it cannot and does not judge whether the underlying technical claim in
+  that quote is *true* — a candidate could say something false and back
+  it with their own real (false) words, and the guardrail would correctly
+  not reject it, because the guardrail's job is narrowly "did they really
+  say this," not fact-checking.
+- `report.pdf`'s PII redaction is regex-based and necessarily incomplete
+  — it catches common phone/address/national-ID *patterns*, not every
+  possible PII format; it should not be relied on as the only privacy
+  safeguard (the consent flow and "don't collect unnecessary fields in
+  the first place" matter more).
+- MCP server: not implemented, by explicit instruction across every phase
+  of this build, despite being a core spec requirement (§3 item 8). Stated
+  plainly here rather than left implicit.

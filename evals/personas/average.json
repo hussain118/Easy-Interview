@@ -1,0 +1,34 @@
+{
+  "persona": "average",
+  "expected": "Middle score, borderline/OK",
+  "turns": [
+    {
+      "competency": "backend",
+      "source": "resume",
+      "source_reference": "",
+      "text": "Tell me about your RAG project — walk me through the architecture.",
+      "answer": "I built a RAG project. It takes documents, splits them into chunks, and uses embeddings to find relevant ones, then the LLM generates an answer based on that. It works pretty well for most queries."
+    },
+    {
+      "competency": "rag",
+      "source": "jd",
+      "source_reference": "",
+      "text": "How do you decide on a chunking strategy for a RAG pipeline?",
+      "answer": "I usually just pick a chunk size like 500 tokens with some overlap. It's a common approach and works fine in practice."
+    },
+    {
+      "competency": "python",
+      "source": "github",
+      "source_reference": "repo:candidate/rag-service, commit:add overlap to chunker",
+      "text": "I see a commit 'add overlap to chunker' in your rag-service repo — walk me through why you added that.",
+      "answer": "Yeah I added overlap at some point because I read it's a common technique. It's supposed to help with context, I think."
+    },
+    {
+      "competency": "debugging",
+      "source": "scenario",
+      "source_reference": "",
+      "text": "Your RAG pipeline suddenly starts returning irrelevant results in production — how do you debug it?",
+      "answer": "I'd probably check the logs and see what's happening. Maybe restart the service or check if something changed recently."
+    }
+  ]
+}

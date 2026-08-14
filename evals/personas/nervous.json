@@ -1,0 +1,34 @@
+{
+  "persona": "nervous",
+  "expected": "Fairness case — hesitant delivery but technically correct; must land near Strong",
+  "turns": [
+    {
+      "competency": "backend",
+      "source": "resume",
+      "source_reference": "",
+      "text": "Tell me about your RAG project — walk me through the architecture.",
+      "answer": "Um, sorry, let me think... okay so, I built a — a RAG project, um, it chunks documents, sorry, by paragraph, with, um, I think 200 token overlap, and it uses, sorry I'm blanking for a second — a sentence transformer for embeddings, stored in Chroma. Sorry, I'm a bit nervous."
+    },
+    {
+      "competency": "rag",
+      "source": "jd",
+      "source_reference": "",
+      "text": "How do you decide on a chunking strategy for a RAG pipeline?",
+      "answer": "Sorry, can you repeat the question? Oh, chunking strategy, right, um, I look at, sorry, I look at how the documents are structured — if they have headers I chunk by section, otherwise by paragraph with some overlap so I don't cut context off mid-sentence. Sorry if that wasn't clear."
+    },
+    {
+      "competency": "python",
+      "source": "github",
+      "source_reference": "repo:candidate/rag-service, commit:add overlap to chunker",
+      "text": "I see a commit 'add overlap to chunker' in your rag-service repo — walk me through why you added that.",
+      "answer": "Oh, um, yeah — I added that because, sorry, without it, questions that, um, spanned two chunks weren't getting enough context. I tested it and it did improve things, sorry, I don't remember the exact number though."
+    },
+    {
+      "competency": "debugging",
+      "source": "scenario",
+      "source_reference": "",
+      "text": "Your RAG pipeline suddenly starts returning irrelevant results in production — how do you debug it?",
+      "answer": "Sorry, um, give me a second — I think I'd first check whether it's retrieval or generation that's broken, by, um, looking at what chunks actually got retrieved for a failing query. Sorry, that's probably where I'd start."
+    }
+  ]
+}

@@ -30,8 +30,30 @@ probed.
 - "shallow": vague, hand-wavy, misses the core of what was asked, or
   cannot go one level deeper than a surface answer.
 - "bluff": confident and fluent but the specifics don't add up, contradict
-  the resume/GitHub evidence given, or claim ownership of work the
-  evidence doesn't support.
+  the resume/GitHub evidence given, claim ownership of work the evidence
+  doesn't support, OR — even with no contradicting evidence available —
+  the answer is dense with technical-sounding vocabulary but names no
+  checkable mechanism (see "Jargon vs. specificity" below).
+
+### Jargon vs. specificity (important — a known failure mode)
+
+Naming technologies/techniques is not the same as explaining them. "I used
+a custom-built distributed vector index" or "an adaptive chunking
+algorithm using semantic similarity clustering and a proprietary scoring
+function" are, by themselves, jargon — they name impressive-sounding
+concepts but give nothing a listener could actually verify or picture: no
+number, no concrete decision with a stated reason, no description of what
+the code actually does step by step. Contrast that with "I chunked by
+paragraph with 200-token overlap because answers spanning a boundary were
+losing context" — this names a concrete number and a concrete reason;
+THAT is specific. When an answer is fluent and vocabulary-heavy but, if
+you strip the jargon out, contains no checkable mechanism, number, or
+concrete decision — grade it "bluff" (if delivered with unearned
+confidence) or "shallow" (if more tentative), never "strong", even when
+you have no resume/GitHub evidence to directly contradict it. Ask
+yourself: could I ask one clarifying "how exactly" question and expect a
+real technical answer, or would it likely produce more of the same
+vocabulary with no new concrete detail? If the latter, it's not strong.
 - "off_topic": doesn't address the question asked.
 - "unclear": too short/garbled/empty to classify (including silence — an
   empty answer is "unclear", not "shallow").

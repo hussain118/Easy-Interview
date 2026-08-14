@@ -1,5 +1,58 @@
 # Prompt iteration notes
 
+## answer_evaluator: v2 → v3 (jargon-vs-specificity fix, diagnosed via the 5-persona evals)
+
+**v1 problem** (discovered running `evals/run_evals.py` for real, not
+theorized): fed the "Bluffer" persona's answers through the real
+per-answer evaluator (`prompts/answer_evaluator.md`, the v2 from the
+Gemini Live phase). Two of four answers — "I architected a full
+production-grade RAG pipeline... using a custom-built distributed vector
+index I wrote from scratch" and "I use an adaptive chunking algorithm
+that dynamically determines optimal chunk boundaries using semantic
+similarity clustering combined with a proprietary scoring function" —
+were both classified `quality: "strong"`. Downstream, the final scorer
+gave the "rag" competency a 4/5 with reasoning calling it "a specific and
+technically sound answer." Neither answer names a single real number, a
+concrete algorithm step, or a checkable decision — it's fluent technical
+vocabulary with nothing underneath. The full 5-persona run scored
+bluffer=2.5, *above* both average=2.0 and weak=2.0 — failing the "bluffer
+must land below Average" requirement outright.
+
+**Diagnosis**: v2's existing fairness rule already said "fluent delivery
+and confident vocabulary are NOT evidence of competence... if the
+specifics don't hold up... or contradict the given evidence, that is
+bluff" — but that rule only fires when there's evidence to contradict, or
+when "specifics don't hold up" is left for the model to judge with no
+concrete definition of what "holding up" means. Without an explicit
+resume/GitHub fact to contradict (realistic for the first couple of
+questions in a real interview, before evidence has been surfaced), the
+model had no operational way to distinguish "names real, checkable
+mechanisms" from "names impressive-sounding concepts and nothing else" —
+so it defaulted to treating jargon density as a proxy for competence.
+
+**v3 change**: added an explicit "Jargon vs. specificity" section to
+`prompts/answer_evaluator.md` with side-by-side contrasting examples (the
+exact bluffer line vs. a genuinely specific one) and an operational test:
+"strip the jargon out — is there a checkable mechanism, number, or
+concrete decision left, or would one clarifying 'how exactly' just
+produce more of the same vocabulary?" Answers that fail this test are
+`bluff` (confident) or `shallow` (tentative), never `strong` — even with
+zero contradicting evidence available.
+
+**Measured result**: re-ran the exact same two bluffer answers through
+the updated evaluator — both now classify as `bluff` (reasons: "impressive-
+sounding claims... lacks specific details on how the architecture works,"
+"uses technical jargon without providing specific details on how the
+chunking algorithm works"). Re-ran the full 5-persona suite:
+bluffer dropped from 2.5 → **1.5**, now correctly below average (2.0) —
+`bluffer_below_average` check flipped from FAIL to PASS. See
+`evals/results.md` for the full before-is-gone/after table and the one
+check that still doesn't pass cleanly (`weak_is_lowest` — the bluffer now
+scores even *below* weak, an arguably-defensible but not literally
+spec-matching outcome, written up honestly there rather than tuned away).
+
+---
+
 ## question_planner: v1 → v2
 
 **What v1 got wrong.** v1's github-grounding rule ("at least 3 questions
@@ -92,7 +145,7 @@ candidate-facing text or picks the graph edge), and an explicit output
 contract — long enough to be a meaningful, cacheable prefix, and
 structurally clearer for the model to follow. `src/agents/evaluator.py`
 now calls `structured_completion_with_usage()` with a fixed
-`prompt_cache_key="interview-evaluator-v1"` (never includes the answer
+`prompt_cache_key="first-round-answer-evaluator-v1"` (never includes the answer
 text) and logs `{input_tokens, cached_tokens, output_tokens}` via
 `src/agents/cache_metrics.py` after every call.
 

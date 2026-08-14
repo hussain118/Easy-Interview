@@ -92,7 +92,7 @@ def structured_completion_with_usage(
     `prompt_cache_key` groups requests for cache routing purposes (OpenAI
     Chat Completions param). It must never contain candidate-specific
     content (e.g. the answer text) — pass something like
-    "interview-evaluator-v1" or "interview-evaluator-v1:{role_hash}".
+    "first-round-answer-evaluator-v1" or "first-round-answer-evaluator-v1:{role_hash}".
     """
     client = get_client()
     kwargs: dict[str, Any] = dict(

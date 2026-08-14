@@ -1,0 +1,34 @@
+{
+  "persona": "bluffer",
+  "expected": "Hard case — confident/fluent but collapses on specifics; must land below Average",
+  "turns": [
+    {
+      "competency": "backend",
+      "source": "resume",
+      "source_reference": "",
+      "text": "Tell me about your RAG project — walk me through the architecture.",
+      "answer": "Oh yeah, I architected a full production-grade RAG pipeline handling millions of documents with sub-100ms latency, using a custom-built distributed vector index I wrote from scratch — way faster than Pinecone or Chroma."
+    },
+    {
+      "competency": "rag",
+      "source": "jd",
+      "source_reference": "",
+      "text": "How do you decide on a chunking strategy for a RAG pipeline?",
+      "answer": "I use an adaptive chunking algorithm that dynamically determines optimal chunk boundaries using semantic similarity clustering combined with a proprietary scoring function I developed."
+    },
+    {
+      "competency": "python",
+      "source": "github",
+      "source_reference": "repo:candidate/rag-service, commit:add overlap to chunker (README shows the repo uses Chroma, not a custom vector index)",
+      "text": "Can you walk me through the exact implementation — specifically repo:candidate/rag-service, commit:add overlap to chunker?",
+      "answer": "Uh, well — I mean, I'd have to check the exact commit, but generally the overlap logic handles edge cases in a robust way across the pipeline."
+    },
+    {
+      "competency": "debugging",
+      "source": "scenario",
+      "source_reference": "",
+      "text": "Your RAG pipeline suddenly starts returning irrelevant results in production — how do you debug it?",
+      "answer": "I'd leverage my monitoring infrastructure to instantly pinpoint the root cause using the observability stack I built."
+    }
+  ]
+}

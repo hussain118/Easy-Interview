@@ -1,0 +1,37 @@
+{
+  "candidate_name": "Test Candidate",
+  "role": "Junior AI Engineer",
+  "interview_date": "2026-08-14",
+  "duration_seconds": 7,
+  "competencies": [
+    {
+      "name": "backend",
+      "score": 3,
+      "confidence": 0.8,
+      "evidence_quote": "I built a FastAPI service with JWT auth and Postgres for storage, deployed on Render.",
+      "reasoning": "The candidate provided a correct overview of their REST API project, mentioning key technologies like FastAPI, JWT authentication, and Postgres, but lacked depth and specific details about the project's functionality or challenges faced."
+    },
+    {
+      "name": "rag",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_quote": "I'd chunk documents by paragraph with overlap, embed with a sentence-transformer model, store in a vector DB like Chroma, and retrieve top-k with a similarity threshold.",
+      "reasoning": "The candidate provided a clear and specific design for a RAG pipeline, detailing the chunking method, embedding model, storage solution, and retrieval strategy, which demonstrates a solid understanding of the topic."
+    }
+  ],
+  "overall_score": 3.5,
+  "recommendation": "borderline",
+  "recommendation_reasoning": "The candidate showed some strengths in backend and RAG design but lacked depth in Python and did not provide sufficient evidence of their skills in that area. Overall, they demonstrated potential but need to improve their technical depth.",
+  "strengths": [
+    "Demonstrated a solid understanding of RAG pipeline design.",
+    "Mentioned relevant technologies in their backend project."
+  ],
+  "concerns": [
+    "Lacked depth in discussing their Python experience.",
+    "Failed to provide meaningful insights during the GitHub deep dive."
+  ],
+  "guardrail_flags": [
+    "evidence_guardrail_rejected:python: evidence_quote not found verbatim in transcript"
+  ],
+  "github_grounded_questions_asked": 1
+}

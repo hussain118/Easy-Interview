@@ -1,0 +1,34 @@
+{
+  "persona": "weak",
+  "expected": "Lowest score, no_hire",
+  "turns": [
+    {
+      "competency": "backend",
+      "source": "resume",
+      "source_reference": "",
+      "text": "Tell me about your RAG project — walk me through the architecture.",
+      "answer": "So I have a project, it's called RAG, it retrieves stuff and generates. I used some libraries for it. It's on my GitHub."
+    },
+    {
+      "competency": "rag",
+      "source": "jd",
+      "source_reference": "",
+      "text": "How do you decide on a chunking strategy for a RAG pipeline?",
+      "answer": "Chunking is like splitting text. I don't remember exact numbers, I just used defaults from a tutorial."
+    },
+    {
+      "competency": "python",
+      "source": "github",
+      "source_reference": "repo:candidate/rag-service, commit:add overlap to chunker",
+      "text": "I see a commit 'add overlap to chunker' in your rag-service repo — walk me through why you added that.",
+      "answer": "Overlap... I'm not totally sure why that was added, might have been a default setting."
+    },
+    {
+      "competency": "debugging",
+      "source": "scenario",
+      "source_reference": "",
+      "text": "Your RAG pipeline suddenly starts returning irrelevant results in production — how do you debug it?",
+      "answer": "I guess I'd look at it and try to fix whatever's wrong."
+    }
+  ]
+}
