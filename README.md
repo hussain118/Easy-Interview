@@ -1,4 +1,4 @@
-# FirstRound AI Video Interviewer
+# \Easy Interviewer
 
 Status: **Phase 1 (PREP pipeline) complete.** Live interview, LangGraph
 controller, avatar, LiveKit transport, MCP server, and scoring are not
