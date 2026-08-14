@@ -134,6 +134,7 @@ def build_initial_state(
         current_question=None,
         current_answer="",
         last_evaluation=None,
+        evaluation_history=[],
         follow_up_count={},
         difficulty="medium",
         transcript=[],

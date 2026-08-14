@@ -30,6 +30,18 @@ class Evaluation(TypedDict):
     recommended_action: NextAction
 
 
+class EvaluationRecord(TypedDict):
+    """One evaluated answer, kept for the final scorer (Stage 2) so it
+    doesn't have to re-derive per-answer quality from raw transcript text.
+    """
+    question_id: str | None
+    competency: str | None
+    node: str
+    quality: AnswerQuality
+    confidence: float
+    reason: str
+
+
 class InterviewState(TypedDict, total=False):
     interview_id: str
 
@@ -54,6 +66,7 @@ class InterviewState(TypedDict, total=False):
     current_answer: str
 
     last_evaluation: Evaluation | None
+    evaluation_history: list[EvaluationRecord]  # one entry per evaluated answer, in order
     follow_up_count: dict[str, int]  # keyed by topic node name
     difficulty: Difficulty
 

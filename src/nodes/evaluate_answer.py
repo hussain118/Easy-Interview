@@ -42,6 +42,17 @@ def evaluate_answer_node(state: InterviewState) -> InterviewState:
     state["last_evaluation"] = evaluation
 
     topic = state.get("current_phase", "")
+    state.setdefault("evaluation_history", []).append(
+        {
+            "question_id": question.get("id"),
+            "competency": question.get("competency"),
+            "node": topic,
+            "quality": evaluation["quality"],
+            "confidence": evaluation["confidence"],
+            "reason": evaluation["reason"],
+        }
+    )
+
     quality = evaluation["quality"]
     follow_ups = state.setdefault("follow_up_count", {})
     count = follow_ups.get(topic, 0)

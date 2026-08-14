@@ -32,7 +32,7 @@ VALID_ACTIONS = {"next_question", "follow_up", "increase_difficulty", "verify", 
 # Deterministic, non-PII cache key: groups all evaluator calls for cache
 # routing without ever including candidate-specific content (the answer
 # text stays in the dynamic user message, never in this key).
-EVALUATOR_CACHE_KEY = "interview-evaluator-v1"
+EVALUATOR_CACHE_KEY = "first-round-answer-evaluator-v1"
 
 EVALUATION_SCHEMA: dict[str, Any] = {
     "type": "object",
