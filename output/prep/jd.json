@@ -1,0 +1,49 @@
+{
+  "role_title": "Junior AI Engineer",
+  "company": "Northwind Labs",
+  "location": "Karachi, Pakistan",
+  "employment_type": "Full-time, on-site",
+  "seniority": "junior",
+  "years_experience_required": "0\u20132 years",
+  "must_haves": [
+    "Strong Python fundamentals",
+    "Hands-on experience with an LLM framework",
+    "Understanding of RAG",
+    "Comfortable with Git and REST APIs",
+    "At least one shipped project"
+  ],
+  "nice_to_haves": [
+    "Experience with vector databases",
+    "Familiarity with prompt engineering",
+    "Exposure to Docker and basic CI/CD"
+  ],
+  "competencies": [
+    {
+      "name": "Python fundamentals",
+      "description": "Strong understanding of data structures, object-oriented programming, and testing in Python."
+    },
+    {
+      "name": "LLM framework experience",
+      "description": "Hands-on experience with frameworks like LangChain or LangGraph to build AI features."
+    },
+    {
+      "name": "RAG understanding",
+      "description": "Knowledge of retrieval-augmented generation techniques, including chunking strategies and embeddings."
+    },
+    {
+      "name": "Version control and API integration",
+      "description": "Proficiency in using Git for version control and integrating REST APIs into applications."
+    },
+    {
+      "name": "Project delivery",
+      "description": "Ability to explain the architecture and trade-offs of at least one completed project."
+    }
+  ],
+  "responsibilities": [
+    "Build and maintain RAG pipelines for internal knowledge retrieval",
+    "Integrate LLM APIs into existing backend services via REST",
+    "Write tests and debug issues in AI-powered features",
+    "Collaborate with the team on code review and technical documentation",
+    "Participate in design discussions for new agent-based features"
+  ]
+}

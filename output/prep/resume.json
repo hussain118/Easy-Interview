@@ -1,0 +1,54 @@
+{
+  "candidate_name": "Test Candidate",
+  "email": "test.candidate@example.com",
+  "phone": "+92-300-0000000",
+  "location": "Karachi, Pakistan",
+  "links": {
+    "github": "https://github.com/encode",
+    "linkedin": "linkedin.com/in/testcandidate",
+    "portfolio": ""
+  },
+  "summary": "Junior software engineer with 1 year of experience building small Python backend services and experimenting with LLM-based tools.",
+  "skills": [
+    "Python",
+    "REST APIs",
+    "Git",
+    "SQL",
+    "basic LangChain",
+    "Docker basics"
+  ],
+  "roles": [
+    {
+      "title": "Software Engineer Intern",
+      "company": "Sample Tech Co.",
+      "start_date": "Jun 2024",
+      "end_date": "Dec 2024",
+      "description": "Built a small REST API in Python for internal tooling. Wrote unit tests and fixed bugs reported by QA. Collaborated with a team of 3 using Git for version control."
+    }
+  ],
+  "projects": [
+    {
+      "name": "Hello-World Demo App",
+      "description": "A demo repository used to learn GitHub workflows and pull requests",
+      "technologies": [
+        "Git",
+        "GitHub"
+      ],
+      "link": ""
+    }
+  ],
+  "education": [
+    {
+      "institution": "Sample University",
+      "degree": "B.S.",
+      "field": "Computer Science",
+      "start_date": "2020",
+      "end_date": "2024"
+    }
+  ],
+  "claims": [
+    "Built a small REST API in Python for internal tooling",
+    "Wrote unit tests and fixed bugs reported by QA",
+    "Collaborated with a team of 3 using Git for version control"
+  ]
+}

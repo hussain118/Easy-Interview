@@ -1,0 +1,150 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Can you explain your understanding of Python data structures and how you have applied them in your projects?",
+      "competency": "Python fundamentals",
+      "source": "resume",
+      "source_reference": "1 year of experience building small Python backend services.",
+      "difficulty": "easy",
+      "follow_up_triggers": [
+        "vague examples",
+        "no specific data structures mentioned"
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Describe your experience with REST APIs. Can you provide an example of a REST API you built and the challenges you faced?",
+      "competency": "Version control and API integration",
+      "source": "resume",
+      "source_reference": "Built a small REST API in Python for internal tooling.",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "unable to describe challenges",
+        "no clear example provided"
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "What is your experience with LLM frameworks like LangChain? Can you describe a specific project where you utilized it?",
+      "competency": "LLM framework experience",
+      "source": "resume",
+      "source_reference": "Experimenting with LLM-based tools.",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no specific project mentioned",
+        "unable to explain the framework's features"
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Can you explain retrieval-augmented generation (RAG) and how it might be applied in AI projects?",
+      "competency": "Understanding of RAG",
+      "source": "jd",
+      "source_reference": "Knowledge of retrieval-augmented generation techniques, including chunking strategies and embeddings.",
+      "difficulty": "hard",
+      "follow_up_triggers": [
+        "no clear understanding of RAG",
+        "unable to provide examples of application"
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "In your GitHub contributions, you worked on the Django REST framework. Can you explain your role and the specific features you contributed to?",
+      "competency": "Version control and API integration",
+      "source": "github",
+      "source_reference": "repo:django-rest-framework, commit:dd9f96fb96 'Bump the github-actions group with 4 updates'",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "unable to specify contributions",
+        "no understanding of the project's impact"
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Looking at your GitHub repository 'rest-framework-tutorial', can you describe how you approached creating educational content for others?",
+      "competency": "Project delivery",
+      "source": "github",
+      "source_reference": "repo:rest-framework-tutorial, file:manage.py",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no clear explanation of the educational approach",
+        "unable to discuss the tutorial's structure"
+      ]
+    },
+    {
+      "id": "q7",
+      "text": "Can you discuss a project where you had to integrate a REST API into an application? What were the key considerations?",
+      "competency": "Version control and API integration",
+      "source": "jd",
+      "source_reference": "Integrate LLM APIs into existing backend services via REST.",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no specific project mentioned",
+        "unable to articulate key considerations"
+      ]
+    },
+    {
+      "id": "q8",
+      "text": "What testing strategies do you use in your Python projects? Can you provide an example of how you implemented testing?",
+      "competency": "Python fundamentals",
+      "source": "resume",
+      "source_reference": "Wrote unit tests and fixed bugs reported by QA.",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no specific strategies mentioned",
+        "unable to provide a concrete example"
+      ]
+    },
+    {
+      "id": "q9",
+      "text": "In your GitHub repository 'databases', what features did you implement that demonstrate your understanding of asynchronous programming?",
+      "competency": "Python fundamentals",
+      "source": "github",
+      "source_reference": "repo:databases, file:setup.py",
+      "difficulty": "hard",
+      "follow_up_triggers": [
+        "unable to specify features",
+        "no understanding of asynchronous programming"
+      ]
+    },
+    {
+      "id": "q10",
+      "text": "Can you describe a situation where you had to collaborate with others on a coding project? What tools did you use for version control?",
+      "competency": "Version control and API integration",
+      "source": "resume",
+      "source_reference": "Collaborated with a team of 3 using Git for version control.",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no specific tools mentioned",
+        "unable to describe collaboration dynamics"
+      ]
+    },
+    {
+      "id": "q11",
+      "text": "What is the most significant project you have shipped or deployed? Can you explain the architecture and trade-offs involved?",
+      "competency": "Project delivery",
+      "source": "jd",
+      "source_reference": "Ability to explain the architecture and trade-offs of at least one completed project.",
+      "difficulty": "hard",
+      "follow_up_triggers": [
+        "no shipped project mentioned",
+        "unable to discuss architecture"
+      ]
+    },
+    {
+      "id": "q12",
+      "text": "Looking at your GitHub contributions, how do you ensure that your code is maintainable and well-documented?",
+      "competency": "Project delivery",
+      "source": "github",
+      "source_reference": "repo:dashboard, file:example.py",
+      "difficulty": "medium",
+      "follow_up_triggers": [
+        "no clear strategies for maintainability",
+        "unable to discuss documentation practices"
+      ]
+    }
+  ],
+  "approved_by_human": false,
+  "edits_made": []
+}

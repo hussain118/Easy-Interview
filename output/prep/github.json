@@ -1,0 +1,336 @@
+{
+  "username": "encode",
+  "profile_url": "https://github.com/encode",
+  "profile_found": true,
+  "repositories_analyzed": [
+    {
+      "name": "django-rest-framework",
+      "full_name": "encode/django-rest-framework",
+      "description": "Web APIs for Django. \ud83c\udfb8",
+      "url": "https://github.com/encode/django-rest-framework",
+      "languages": {
+        "Python": 1489656,
+        "HTML": 56443,
+        "CSS": 23627,
+        "JavaScript": 6916
+      },
+      "readme_excerpt": "# [Django REST framework][docs]\n\n[![build-status-image]][build-status]\n[![coverage-status-image]][codecov]\n[![pypi-version]][pypi]\n\n**Awesome web-browsable Web APIs.**\n\nFull documentation for the project is available at [https://www.django-rest-framework.org/][docs].\n\n---\n\n# Overview\n\nDjango REST framework is a powerful and flexible toolkit for building Web APIs.\n\nSome reasons you might want to use REST framework:\n\n* The Web browsable API is a huge usability win for your developers.\n* [Authentication policies][authentication] including optional packages for [OAuth1a][oauth1-section] and [OAuth2][oauth2-section].\n* [Serialization][serializers] that supports both [ORM][modelserializer-section] and [non-ORM][serializer-section] data sources.\n* Customizable all the way down - just use [regular function-based views][functionview-section] if you don't need the [more][generic-views] [powerful][viewsets] [features][routers].\n* [Extensive documentation][docs], and [great community support][group].\n\n**Below**: *Screenshot from the browsable API*\n\n![Screenshot][image]\n\n----\n\n# Requirements\n\n* Python 3.10+\n* Django 5.2, 6.0, 6.1\n\nWe **highly recommend** and only officially support the latest patch release of\neach Python and Django series.\n\n# Installation\n\nInstall using `pip`...\n\n    pip install djangorestframework\n\nAdd `'rest_framework'` to your `INSTALLED_APPS` setting.\n\n```python\nINSTALLED_APPS = [\n    # ...\n    \"rest_framework\",\n]\n```\n\n# Example\n\nLet's take a look at a quick example o",
+      "topics": [
+        "api",
+        "django",
+        "python",
+        "rest"
+      ],
+      "stars": 30128,
+      "last_pushed": "2026-08-12T11:26:08Z",
+      "recent_commits": [
+        {
+          "sha": "dd9f96fb96",
+          "message": "Bump the github-actions group with 4 updates (#10020)",
+          "date": "2026-08-12T11:25:42Z",
+          "url": "https://github.com/encode/django-rest-framework/commit/dd9f96fb96166a0d40eb60eaa0251371b114549d"
+        },
+        {
+          "sha": "1f599b1ec4",
+          "message": "Fix duplicate validation errors for GenericIPAddressField with protocol (#10011)",
+          "date": "2026-08-11T06:51:37Z",
+          "url": "https://github.com/encode/django-rest-framework/commit/1f599b1ec4e1d2e2d990a625a53f2ba219a89bb3"
+        },
+        {
+          "sha": "11875a38f4",
+          "message": "Prepare release 3.18.0 (#10015)",
+          "date": "2026-08-07T14:50:50Z",
+          "url": "https://github.com/encode/django-rest-framework/commit/11875a38f483cea69d8ef2fd9ede6b96fb602ec4"
+        },
+        {
+          "sha": "d346a8c3c9",
+          "message": "Add note about Browsable API simulating `POST` in documentation (#9814)",
+          "date": "2026-08-07T06:55:25Z",
+          "url": "https://github.com/encode/django-rest-framework/commit/d346a8c3c92a36fdb462c992331e238d0a737305"
+        },
+        {
+          "sha": "80d535ddf0",
+          "message": "Fix GHA workflow for preparing release",
+          "date": "2026-08-06T18:00:57Z",
+          "url": "https://github.com/encode/django-rest-framework/commit/80d535ddf08226020a9f44ca57f6eb1bbd91fa6a"
+        }
+      ],
+      "sample_files": [
+        {
+          "path": "runtests.py",
+          "excerpt": "#! /usr/bin/env python3\nimport os\nimport sys\n\nimport pytest\n\n\ndef split_class_and_function(string):\n    class_string, function_string = string.split('.', 1)\n    return \"%s and %s\" % (class_string, function_string)\n\n\ndef is_function(string):\n    # `True` if it looks like a test function is included in the string.\n    return string.startswith('test_') or '.test_' in string\n\n\ndef is_class(string):\n    # `True` if first character is uppercase - assume it's a class name.\n    return string[0] == string[0].upper()\n\n\nif __name__ == \"__main__\":\n    if len(sys.argv) > 1:\n        pytest_args = sys.argv[1:]\n        first_arg = pytest_args[0]\n\n        try:\n            pytest_args.remove('--coverage')\n        except ValueError:\n            pass\n        else:\n            pytest_args = [\n                '--cov', '.',\n                '--cov-report', 'xml',\n            ] + pytest_args\n\n        try:\n            pytest_args.remove('--no-pkgroot')\n        except ValueError:\n            pass\n        else:\n            sys.path.pop(0)\n\n            # import rest_framework before pytest re-adds the package root directory.\n            import rest_framework\n            package_dir = os.path.join(os.getcwd(), "
+        }
+      ]
+    },
+    {
+      "name": "rest-framework-tutorial",
+      "full_name": "encode/rest-framework-tutorial",
+      "description": "The Django REST framework tutorial. \ud83c\udf93",
+      "url": "https://github.com/encode/rest-framework-tutorial",
+      "languages": {
+        "Python": 24362,
+        "Shell": 305,
+        "Procfile": 41
+      },
+      "readme_excerpt": "# REST framework tutorial\n\nSource code for the [Django REST framework tutorial][tut].\n\n[tut]: http://www.django-rest-framework.org/tutorial/1-serialization\n\n[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/encode/rest-framework-tutorial)\n",
+      "topics": [],
+      "stars": 1267,
+      "last_pushed": "2026-08-08T19:16:55Z",
+      "recent_commits": [
+        {
+          "sha": "682122f2dc",
+          "message": "Bump djangorestframework from 3.17.1 to 3.17.2 (#125)",
+          "date": "2026-08-08T19:16:53Z",
+          "url": "https://github.com/encode/rest-framework-tutorial/commit/682122f2dc46a8d4e2cd0f8c78ddc67ea7951b4f"
+        },
+        {
+          "sha": "e1a6b17891",
+          "message": "Bump markdown from 3.10.2 to 3.10.3 (#127)",
+          "date": "2026-08-08T17:46:54Z",
+          "url": "https://github.com/encode/rest-framework-tutorial/commit/e1a6b17891e9d943cee7f5b8d83e2e135d06aa6d"
+        },
+        {
+          "sha": "c6763ece2f",
+          "message": "Bump django from 6.0.7 to 6.0.8 (#126)",
+          "date": "2026-08-08T17:46:26Z",
+          "url": "https://github.com/encode/rest-framework-tutorial/commit/c6763ece2ffeccd6670fa4bc53e7947b83f560c1"
+        },
+        {
+          "sha": "219c4e5e77",
+          "message": "Bump drf-spectacular from 0.29.0 to 0.30.0 (#124)",
+          "date": "2026-07-11T11:28:19Z",
+          "url": "https://github.com/encode/rest-framework-tutorial/commit/219c4e5e770b1ec014b134cbb48b457bf2a09aa9"
+        },
+        {
+          "sha": "62724d625d",
+          "message": "Bump django from 6.0.6 to 6.0.7 (#123)",
+          "date": "2026-07-11T11:25:40Z",
+          "url": "https://github.com/encode/rest-framework-tutorial/commit/62724d625d20c93d28f2a694115b06bc903a0537"
+        }
+      ],
+      "sample_files": [
+        {
+          "path": "manage.py",
+          "excerpt": "#!/usr/bin/env python\n\"\"\"Django's command-line utility for administrative tasks.\"\"\"\nimport os\nimport sys\n\n\ndef main():\n    \"\"\"Run administrative tasks.\"\"\"\n    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"tutorial.settings\")\n    try:\n        from django.core.management import execute_from_command_line\n    except ImportError as exc:\n        raise ImportError(\n            \"Couldn't import Django. Are you sure it's installed and \"\n            \"available on your PYTHONPATH environment variable? Did you \"\n            \"forget to activate a virtual environment?\"\n        ) from exc\n    execute_from_command_line(sys.argv)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+        }
+      ]
+    },
+    {
+      "name": "databases",
+      "full_name": "encode/databases",
+      "description": "Async database support for Python. \ud83d\uddc4",
+      "url": "https://github.com/encode/databases",
+      "languages": {
+        "Python": 160022,
+        "Shell": 2670
+      },
+      "readme_excerpt": "# Databases\n\n<p>\n<a href=\"https://github.com/encode/databases/actions\">\n    <img src=\"https://github.com/encode/databases/workflows/Test%20Suite/badge.svg\" alt=\"Test Suite\">\n</a>\n<a href=\"https://pypi.org/project/databases/\">\n    <img src=\"https://badge.fury.io/py/databases.svg\" alt=\"Package version\">\n</a>\n</p>\n\nDatabases gives you simple asyncio support for a range of databases.\n\nIt allows you to make queries using the powerful [SQLAlchemy Core][sqlalchemy-core]\nexpression language, and provides support for PostgreSQL, MySQL, and SQLite.\n\nDatabases is suitable for integrating against any async Web framework, such as [Starlette][starlette],\n[Sanic][sanic], [Responder][responder], [Quart][quart], [aiohttp][aiohttp], [Tornado][tornado], or [FastAPI][fastapi].\n\n**Documentation**: [https://www.encode.io/databases/](https://www.encode.io/databases/)\n\n**Requirements**: Python 3.8+\n\n---\n\n## Installation\n\n```shell\n$ pip install databases\n```\n\nDatabase drivers supported are:\n\n* [asyncpg][asyncpg]\n* [aiopg][aiopg]\n* [aiomysql][aiomysql]\n* [asyncmy][asyncmy]\n* [aiosqlite][aiosqlite]\n\nYou can install the required database drivers with:\n\n```shell\n$ pip install databases[asyncpg]\n$ pip install databases[aiopg]\n$ pip install databases[aiomysql]\n$ pip install databases[asyncmy]\n$ pip install databases[aiosqlite]\n```\n\nNote that if you are using any synchronous SQLAlchemy functions such as `engine.create_all()` or [alembic][alembic] migrations then you still have to install a synchronous DB dr",
+      "topics": [
+        "asyncio",
+        "mysql",
+        "postgres",
+        "sqlalchemy",
+        "sqlite"
+      ],
+      "stars": 3997,
+      "last_pushed": "2024-05-21T19:58:17Z",
+      "recent_commits": [
+        {
+          "sha": "ae3fb16f40",
+          "message": "Release 0.9.0 (#584)",
+          "date": "2024-03-01T17:30:12Z",
+          "url": "https://github.com/encode/databases/commit/ae3fb16f40201d9ed0ed31bea31a289127169568"
+        },
+        {
+          "sha": "40079f97b6",
+          "message": "Bump starlette from 0.27.0 to 0.36.2 (#581)",
+          "date": "2024-02-22T20:03:43Z",
+          "url": "https://github.com/encode/databases/commit/40079f97b672fd0ddb763af068e7dd314daff6df"
+        },
+        {
+          "sha": "b273cd9237",
+          "message": "Support Python 3.12 (#583)",
+          "date": "2024-02-22T19:37:35Z",
+          "url": "https://github.com/encode/databases/commit/b273cd92372d64b8bb43a94a2227a61b926b44f1"
+        },
+        {
+          "sha": "0fc16b28fe",
+          "message": "Fix some column types being parsed twice (#582)",
+          "date": "2024-02-22T14:19:58Z",
+          "url": "https://github.com/encode/databases/commit/0fc16b28fed9c1364edb0f1624790dad12d02570"
+        },
+        {
+          "sha": "1e40ad1e6a",
+          "message": "\ud83e\ude9b Moving to SQLAlchemy 2.0 (#540)",
+          "date": "2024-02-21T12:25:56Z",
+          "url": "https://github.com/encode/databases/commit/1e40ad1e6ae718bd0d299d7c3303d625de6fc083"
+        }
+      ],
+      "sample_files": [
+        {
+          "path": "setup.py",
+          "excerpt": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\nimport os\nimport re\n\nfrom setuptools import setup\n\n\ndef get_version(package):\n    \"\"\"\n    Return package version as listed in `__version__` in `init.py`.\n    \"\"\"\n    with open(os.path.join(package, \"__init__.py\")) as f:\n        return re.search(\"__version__ = ['\\\"]([^'\\\"]+)['\\\"]\", f.read()).group(1)\n\n\ndef get_long_description():\n    \"\"\"\n    Return the README.\n    \"\"\"\n    with open(\"README.md\", encoding=\"utf8\") as f:\n        return f.read()\n\n\ndef get_packages(package):\n    \"\"\"\n    Return root package and all sub-packages.\n    \"\"\"\n    return [\n        dirpath\n        for dirpath, dirnames, filenames in os.walk(package)\n        if os.path.exists(os.path.join(dirpath, \"__init__.py\"))\n    ]\n\n\nsetup(\n    name=\"databases\",\n    version=get_version(\"databases\"),\n    python_requires=\">=3.8\",\n    url=\"https://github.com/encode/databases\",\n    license=\"BSD\",\n    description=\"Async database support for Python.\",\n    long_description=get_long_description(),\n    long_description_content_type=\"text/markdown\",\n    author=\"Tom Christie\",\n    author_email=\"tom@tomchristie.com\",\n    packages=get_packages(\"databases\"),\n    package_data={\"databases\": [\"py.t"
+        }
+      ]
+    },
+    {
+      "name": "apistar",
+      "full_name": "encode/apistar",
+      "description": "The Web API toolkit. \ud83d\udee0",
+      "url": "https://github.com/encode/apistar",
+      "languages": {
+        "Python": 111881,
+        "CSS": 38356,
+        "HTML": 27632,
+        "JavaScript": 13295,
+        "Shell": 1281
+      },
+      "readme_excerpt": "<p align=\"center\">\n    <img src=\"https://raw.githubusercontent.com/encode/apistar/master/docs/img/logo-200-square-light.png\" alt=\"API Star\" />\n</p>\n<p align=\"center\">\n    \ud83d\udee0 <em>The Web API toolkit.</em> \ud83d\udee0\n</p>\n<p align=\"center\">\n<a href=\"https://travis-ci.org/encode/apistar\">\n    <img src=\"https://travis-ci.org/encode/apistar.svg?branch=master\" alt=\"Build Status\">\n</a>\n<a href=\"https://codecov.io/gh/encode/apistar\">\n    <img src=\"https://codecov.io/gh/encode/apistar/branch/master/graph/badge.svg\" alt=\"codecov\">\n</a>\n<a href=\"https://pypi.python.org/pypi/apistar\">\n    <img src=\"https://badge.fury.io/py/apistar.svg\" alt=\"Package version\">\n</a>\n</p>\n\n---\n\n**Community:** https://discuss.apistar.org \ud83e\udd14 \ud83d\udcad \ud83e\udd13 \ud83d\udcac \ud83d\ude0e\n\n**Documentation:** https://docs.apistar.com \ud83d\udcd8\n\n**Requirements:** Python 3.6+\n\n---\n\nAPI Star is a toolkit for working with OpenAPI or Swagger schemas. It allows you to:\n\n* Build API documentation, with a selection of available themes.\n* Validate API schema documents, and provide contextual errors.\n* Make API requests using the dynamic client library.\n\nYou can use it to build static documentation, integrate it within a Web framework,\nor use it as the client library for interacting with other APIs.\n\n## Quickstart\n\nInstall API Star:\n\n```bash\n$ pip3 install apistar\n```\n\nLet's take a look at some of the functionality the toolkit provides...\n\nWe'll start by creating an OpenAPI schema, `schema.yaml`:\n\n```yaml\nopenapi: 3.0.0\ninfo:\n  title: Widget API\n  version: '1.0'\n  description: A",
+      "topics": [
+        "api",
+        "python",
+        "rest"
+      ],
+      "stars": 5544,
+      "last_pushed": "2022-02-24T05:00:58Z",
+      "recent_commits": [
+        {
+          "sha": "41d83d35df",
+          "message": "Bring Python current in Travis (#682)",
+          "date": "2021-08-31T09:48:33Z",
+          "url": "https://github.com/encode/apistar/commit/41d83d35df2ae7f4179ece5e1e1dec07a9b79446"
+        },
+        {
+          "sha": "8015bc1b3c",
+          "message": "Fix simple typo: agnositic -> agnostic (#672)",
+          "date": "2020-02-10T10:46:11Z",
+          "url": "https://github.com/encode/apistar/commit/8015bc1b3c9f43bcf9baa8407330338224232689"
+        },
+        {
+          "sha": "2edeb6946a",
+          "message": "Version 0.7.2",
+          "date": "2019-04-03T08:12:02Z",
+          "url": "https://github.com/encode/apistar/commit/2edeb6946af3562c6310fcd6db393d3960152f32"
+        },
+        {
+          "sha": "21c2942a94",
+          "message": "Set minimum Python version to 3.6 (#655)",
+          "date": "2019-04-03T08:06:39Z",
+          "url": "https://github.com/encode/apistar/commit/21c2942a94b38e21f02217c8a3b901a1224fd630"
+        },
+        {
+          "sha": "3f1706ef1d",
+          "message": "Update cli.py (#653)",
+          "date": "2019-03-27T09:46:35Z",
+          "url": "https://github.com/encode/apistar/commit/3f1706ef1dadef03ad263c0139e58ec3bb8939cc"
+        }
+      ],
+      "sample_files": [
+        {
+          "path": "setup.py",
+          "excerpt": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\nimport os\nimport re\nimport sys\n\nfrom setuptools import setup\n\n\ndef get_version(package):\n    \"\"\"\n    Return package version as listed in `__version__` in `init.py`.\n    \"\"\"\n    init_py = open(os.path.join(package, \"__init__.py\")).read()\n    return re.search(\"__version__ = ['\\\"]([^'\\\"]+)['\\\"]\", init_py).group(1)\n\n\ndef get_packages(package):\n    \"\"\"\n    Return root package and all sub-packages.\n    \"\"\"\n    return [\n        dirpath\n        for dirpath, dirnames, filenames in os.walk(package)\n        if os.path.exists(os.path.join(dirpath, \"__init__.py\"))\n    ]\n\n\ndef get_package_data(package):\n    \"\"\"\n    Return all files under the root package, that are not in a\n    package themselves.\n    \"\"\"\n    walk = [\n        (dirpath.replace(package + os.sep, \"\", 1), filenames)\n        for dirpath, dirnames, filenames in os.walk(package)\n        if not os.path.exists(os.path.join(dirpath, \"__init__.py\"))\n    ]\n\n    filepaths = []\n    for base, filenames in walk:\n        filepaths.extend([os.path.join(base, filename) for filename in filenames])\n    return {package: filepaths}\n\n\ndef get_long_description(long_description_file):\n    \"\"\"\n    Read long de"
+        }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "full_name": "encode/dashboard",
+      "description": "An admin interface for ASGI Web frameworks.",
+      "url": "https://github.com/encode/dashboard",
+      "languages": {
+        "Python": 39413,
+        "HTML": 16047,
+        "Shell": 2413,
+        "CSS": 528
+      },
+      "readme_excerpt": "An admin dashboard for use with ASGI web frameworks.\n\n**`dashboard` is still under development: We recommend pinning any dependencies with `dashboard~=0.1`**\n\n**example.py**\n\n```python\nfrom starlette.applications import Starlette\nfrom starlette.routing import Mount, Route\nfrom starlette.responses import RedirectResponse\nimport databases\nimport dashboard\nimport orm\nimport datetime\n\n\ndatabase = databases.Database(\"sqlite:///test.db\")\nmodels = orm.ModelRegistry(database=database)\n\n\nclass Notes(orm.Model):\n    registry = models\n    tablename = \"notes\"\n    fields = {\n        \"id\": orm.Integer(title=\"ID\", primary_key=True),\n        \"created\": orm.DateTime(\n            title=\"Created\", default=datetime.datetime.now, read_only=True\n        ),\n        \"text\": orm.String(title=\"Text\", max_length=100),\n        \"completed\": orm.Boolean(title=\"Completed\", default=False),\n    }\n\n\nadmin = dashboard.Dashboard(\n    tables=[\n        dashboard.DashboardTable(\n            ident=\"notes\", title=\"Notes\", datasource=Notes.objects.order_by(\"-id\")\n        ),\n    ]\n)\n\n\nroutes = [\n    Mount(\"/admin\", app=admin, name=\"dashboard\"),\n    Route(\"/\", endpoint=RedirectResponse(url=\"/admin\")),\n]\n\napp = Starlette(\n    debug=True,\n    routes=routes,\n    on_startup=[database.connect],\n    on_shutdown=[database.disconnect],\n)\n```\n\nRough installation...\n\n```shell\n$ virtualenv venv\n$ venv/bin/pip install dashboard\n$ venv/bin/python\n>>> from example import models\n>>> models.create_all()\n$ venv/bin/uvicorn example:app\n",
+      "topics": [
+        "asgi",
+        "dashboard",
+        "database",
+        "orm"
+      ],
+      "stars": 135,
+      "last_pushed": "2021-12-18T16:04:59Z",
+      "recent_commits": [
+        {
+          "sha": "a184d749a3",
+          "message": "Move statics app inside dashboard (#30)",
+          "date": "2021-12-18T16:04:58Z",
+          "url": "https://github.com/encode/dashboard/commit/a184d749a3a806f8d65574b5712ddce24169c677"
+        },
+        {
+          "sha": "aac0706f44",
+          "message": "Format template files (#29)",
+          "date": "2021-12-17T09:21:35Z",
+          "url": "https://github.com/encode/dashboard/commit/aac0706f445fc2b68e1a92c90308cfb578c7ba7a"
+        },
+        {
+          "sha": "6178cb7283",
+          "message": "Enforce can_create, can_edit, can_delete in API (#28)",
+          "date": "2021-11-24T15:28:01Z",
+          "url": "https://github.com/encode/dashboard/commit/6178cb7283d555c243b308787983619f716be02b"
+        },
+        {
+          "sha": "c05f2d2165",
+          "message": "Separate permission for create edit delete (#27)",
+          "date": "2021-11-20T12:04:53Z",
+          "url": "https://github.com/encode/dashboard/commit/c05f2d216554c283e435f4ef2a5063a97a96f368"
+        },
+        {
+          "sha": "2aca3f8784",
+          "message": "uplift test coverage (#26)",
+          "date": "2021-09-19T10:39:27Z",
+          "url": "https://github.com/encode/dashboard/commit/2aca3f8784cfb8717460361737160e5cea8bc940"
+        }
+      ],
+      "sample_files": [
+        {
+          "path": "example.py",
+          "excerpt": "from starlette.applications import Starlette\nfrom starlette.routing import Mount, Route\nfrom starlette.responses import RedirectResponse\nimport databases\nimport dashboard\nimport orm\nimport datetime\n\n\ndatabase = databases.Database(\"sqlite:///test.db\")\nmodels = orm.ModelRegistry(database=database)\n\n\nclass Notes(orm.Model):\n    registry = models\n    tablename = \"notes\"\n    fields = {\n        \"id\": orm.Integer(title=\"ID\", primary_key=True),\n        \"created\": orm.DateTime(\n            title=\"Created\", default=datetime.datetime.now, read_only=True\n        ),\n        \"text\": orm.String(title=\"Text\", max_length=100),\n        \"completed\": orm.Boolean(title=\"Completed\", default=False),\n    }\n\n\nadmin = dashboard.Dashboard(\n    tables=[\n        dashboard.DashboardTable(\n            ident=\"notes\",\n            title=\"Notes\",\n            datasource=Notes.objects.order_by(\"-id\"),\n        ),\n    ]\n)\n\n\nroutes = [\n    Mount(\"/admin\", app=admin, name=\"dashboard\"),\n    Route(\"/\", endpoint=RedirectResponse(url=\"/admin\")),\n]\n\napp = Starlette(\n    debug=True,\n    routes=routes,\n    on_startup=[database.connect],\n    on_shutdown=[database.disconnect],\n)\n"
+        },
+        {
+          "path": "setup.py",
+          "excerpt": "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\n\nimport os\nimport re\n\nfrom setuptools import setup\n\n\n\ndef get_version(package):\n    \"\"\"\n    Return package version as listed in `__version__` in `init.py`.\n    \"\"\"\n    init_py = open(os.path.join(package, '__init__.py')).read()\n    return re.search(\"__version__ = ['\\\"]([^'\\\"]+)['\\\"]\", init_py).group(1)\n\n\ndef get_packages(package):\n    \"\"\"\n    Return root package and all sub-packages.\n    \"\"\"\n    return [dirpath\n            for dirpath, dirnames, filenames in os.walk(package)\n            if os.path.exists(os.path.join(dirpath, '__init__.py'))]\n\n\ndef read(f):\n    return open(f, 'r', encoding='utf-8').read()\n\n\nversion = get_version('dashboard')\n\n\nsetup(\n    name='dashboard',\n    version=version,\n    url='https://github.com/encode/dashboard',\n    license='BSD',\n    description='An admin dashboard.',\n    long_description=read('README.md'),\n    long_description_content_type='text/markdown',\n    author='Tom Christie',\n    author_email='tom@tomchristie.com',\n    packages=get_packages('dashboard'),\n    include_package_data=True,\n    install_requires=[\n        'aiofiles',\n        'starlette',\n        'uvicorn',  # Not strictly true, but we'll hav"
+        }
+      ]
+    }
+  ],
+  "gpt_analysis": {
+    "strengths_evidenced": [
+      "Contributed to the Django REST framework, a widely-used toolkit for building web APIs in Python, showcasing strong Python skills and familiarity with REST APIs in the repository 'django-rest-framework'.",
+      "Developed a tutorial repository for Django REST framework, indicating an ability to create educational content and practical applications in 'rest-framework-tutorial'.",
+      "Built an async database support library for Python, demonstrating knowledge of asynchronous programming and database integration in the 'databases' repository.",
+      "Worked on an admin dashboard for ASGI web frameworks, showing experience with web application development in the 'dashboard' repository."
+    ],
+    "concerns": [
+      "The 'apistar' repository shows a lack of recent activity, with the last commit dated back to February 2022, which may indicate it is not actively maintained.",
+      "The 'dashboard' repository has a low star count (135), suggesting it may not be widely adopted or could be in early development stages."
+    ],
+    "notable_code_areas": [
+      {
+        "repo": "django-rest-framework",
+        "file": "runtests.py",
+        "note": "The test setup in 'runtests.py' demonstrates the candidate's understanding of testing practices in Python."
+      },
+      {
+        "repo": "rest-framework-tutorial",
+        "file": "manage.py",
+        "note": "The 'manage.py' file illustrates the candidate's familiarity with Django's command-line utilities."
+      },
+      {
+        "repo": "databases",
+        "file": "setup.py",
+        "note": "The 'setup.py' file showcases the candidate's experience with packaging Python projects."
+      },
+      {
+        "repo": "dashboard",
+        "file": "example.py",
+        "note": "The example usage in 'example.py' provides insight into the candidate's ability to integrate various components in a web application."
+      }
+    ],
+    "commit_cadence_summary": "The repositories show a mix of recent activity, with the most active being 'django-rest-framework' and 'rest-framework-tutorial', indicating ongoing development and maintenance.",
+    "overall_summary": "The candidate has demonstrated solid Python skills through contributions to several repositories, particularly in web API development and asynchronous programming. However, some projects show signs of inactivity, which may raise questions about ongoing engagement with the technology."
+  },
+  "no_profile_reason": null
+}

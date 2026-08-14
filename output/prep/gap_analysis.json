@@ -1,0 +1,60 @@
+{
+  "matched_competencies": [
+    {
+      "competency": "Python fundamentals",
+      "evidence": "1 year of experience building small Python backend services.",
+      "source": "resume"
+    },
+    {
+      "competency": "Version control and API integration",
+      "evidence": "Collaborated with a team of 3 using Git for version control and built a small REST API in Python.",
+      "source": "resume"
+    },
+    {
+      "competency": "LLM framework experience",
+      "evidence": "Experimenting with LLM-based tools.",
+      "source": "resume"
+    },
+    {
+      "competency": "Project delivery",
+      "evidence": "Built a small REST API in Python for internal tooling.",
+      "source": "resume"
+    },
+    {
+      "competency": "Version control and API integration",
+      "evidence": "Contributed to the Django REST framework, showcasing strong Python skills and familiarity with REST APIs.",
+      "source": "github"
+    }
+  ],
+  "gaps": [
+    {
+      "competency": "Hands-on experience with an LLM framework",
+      "concern": "The candidate mentions basic experience with LangChain but lacks detailed evidence of hands-on projects."
+    },
+    {
+      "competency": "Understanding of RAG",
+      "concern": "No evidence of knowledge or experience with retrieval-augmented generation techniques."
+    },
+    {
+      "competency": "At least one shipped project",
+      "concern": "The candidate has built projects but does not explicitly mention any shipped or deployed projects."
+    }
+  ],
+  "claims_to_verify": [
+    {
+      "claim": "Built a small REST API in Python for internal tooling",
+      "github_status": "supported",
+      "note": "Supported by contributions to the Django REST framework."
+    },
+    {
+      "claim": "Wrote unit tests and fixed bugs reported by QA",
+      "github_status": "unverifiable",
+      "note": "No GitHub evidence available to confirm this claim."
+    },
+    {
+      "claim": "Collaborated with a team of 3 using Git for version control",
+      "github_status": "unverifiable",
+      "note": "No GitHub evidence available to confirm this claim."
+    }
+  ]
+}
