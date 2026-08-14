@@ -240,8 +240,8 @@ file) — not just written and assumed to work.
 | LangGraph question selection + Gemini speaking it + GPT evaluating a (scripted) answer, wired together | **Live-verified** — `tests/test_gemini_live_graph_integration_live.py` |
 | FastAPI consent → LiveKit token flow | **Live-verified** — `tests/test_api.py` |
 | `graph.update_state()` correctly marking a transcript turn `interrupted=true` (the barge-in transcript mechanism) | **Live-verified** (mechanism only, not triggered by a real interruption) — `tests/test_barge_in_transcript_patch.py` |
-| `livekit_agent/interview_worker.py` end to end with a real candidate in a real browser | **NOT verified** — this environment has no microphone, speaker, or browser. The worker imports and constructs its `RealtimeModel`/`Agent`/`AgentSession` correctly (`tests/test_interview_worker_imports.py`), but the full audio round-trip through LiveKit (candidate mic → LiveKit → worker → Gemini Live → worker → LiveKit → candidate speaker) has only been exercised piece-by-piece, never as one continuous real call. |
-| Barge-in actually cutting off audio mid-sentence in a real call | **NOT verified** — requires a real human speaking over the AI. The mechanism LiveKit Agents uses for this (VAD-based turn detection built into `AgentSession`) is the framework's own responsibility, not custom code here; what *is* custom (marking the transcript) is verified. |
+| `livekit_agent/interview_worker.py` running as an actual dispatched job against the real LiveKit Cloud project | **Partially verified, with a known unresolved issue.** The worker registers with LiveKit Cloud, receives real job dispatch when a room is created, joins the room, and correctly resumes/advances the LangGraph checkpoint (confirmed via logs: `Resuming existing interview state at node resume_probe (dropped-call recovery)`). Three real bugs were found and fixed this way (not while writing the code): a missing `sys.path` entry causing `ModuleNotFoundError` when run as a script; a crash on `AgentHandoff` conversation-item events; and a blocking `await` on the AI's speech-playout handle that hangs forever with no real audio subscriber. **Still unresolved**: the Gemini Live connection itself (`livekit-plugins-google`'s `RealtimeModel`) never completes when run inside the LiveKit Agents job — no audio, no transcript, no error, indefinitely — for the *exact same* model, API key, and connection config that connects in under 2 seconds when called directly via raw `google-genai` (verified by extracting the plugin's own generated config with `_build_connect_config()` and feeding it to the raw client, which worked immediately). Ruled out: the config itself (proven fine standalone); job-executor process isolation (tested both `JobExecutorType.PROCESS` — the default — and `JobExecutorType.THREAD`, same hang either way). Not yet tried: a different livekit-agents/plugin version, or tracing inside the plugin's actual websocket send/receive loop. This is an honest, unresolved finding, not a guess — see the fixed bugs above for what testing *did* resolve. |
+| Barge-in actually cutting off audio mid-sentence in a real call | **NOT verified** — blocked on the Gemini-connection issue above (no audio ever starts, so there's nothing to interrupt yet). The transcript-marking mechanism itself (`graph.update_state()`) is independently verified — see the row above the table split. |
 | `frontend/candidate.html` in an actual browser | **NOT verified** — written against LiveKit's documented JS client API (`Room`, `RoomEvent.TrackSubscribed`, `ActiveSpeakersChanged`, `prepareConnection`) and the CDN script URL was confirmed reachable, but never opened in a real browser in this session. |
 
 The honest summary: transport (LiveKit) and brain (Gemini Live) are each
@@ -482,11 +482,20 @@ Phase 2 (LangGraph controller):
   logic, not an end-to-end timing test (would make the suite slow).
 
 Phase 3 (live call):
-- See "What's verified vs. not" above — the honest short version: every
-  individual piece (LiveKit, Gemini Live, GPT, LangGraph) is
-  live-verified against real credentials, and proven to work together for
-  at least one real turn, but a full continuous real-human call through
-  the browser frontend has not been run in this environment.
+- **Known unresolved issue**: running the actual `livekit_agent/interview_worker.py`
+  as a dispatched LiveKit Agents job, the Gemini Live connection hangs
+  indefinitely (no audio, no error) — even though the identical model/
+  key/config connects in under 2 seconds outside the LiveKit Agents
+  framework. Job-executor mode (process vs. thread) was ruled out as the
+  cause. See "What's verified vs. not" above for the full diagnostic
+  trail. This means no audio has actually been produced by the worker in
+  a real dispatched job yet, despite dispatch, room join, and LangGraph
+  checkpoint resumption all working correctly.
+- See "What's verified vs. not" above for the rest — the honest short
+  version: LiveKit and Gemini Live are each independently live-verified
+  against real credentials, and proven to work together with LangGraph +
+  GPT for one real turn in a *direct* (non-worker) integration test, but
+  the actual worker process has the unresolved connection issue above.
 - No latency numbers exist yet — the measurement code is real and wired
   in, but needs a real call to produce data.
 - Avatar is intentionally simple (SVG + open/closed mouth toggle on

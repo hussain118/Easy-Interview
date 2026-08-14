@@ -35,8 +35,17 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
 import time
 from pathlib import Path
+
+# Running this file directly (`python livekit_agent/interview_worker.py`)
+# only puts livekit_agent/ on sys.path, not the project root, so the `src`
+# package can't be found — add it explicitly (found this the first time
+# the worker was actually run, not while writing it).
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from langgraph.types import Command
 from livekit import agents
@@ -153,7 +162,10 @@ async def entrypoint(ctx: JobContext) -> None:
     @session.on("conversation_item_added")
     def _on_conversation_item_added(ev):
         item = ev.item
-        if item.role != "user":
+        # item can be a ChatMessage (role="user"/"assistant") or an
+        # AgentHandoff (no .role at all) — found by actually running the
+        # worker against a real room, not assumed from the type hints.
+        if getattr(item, "role", None) != "user":
             return
         text = "".join(str(c) for c in (item.content or []) if isinstance(c, str))
         if text.strip():
@@ -161,8 +173,16 @@ async def entrypoint(ctx: JobContext) -> None:
 
     await session.start(agent=agent, room=ctx.room)
 
-    async def speak(text: str) -> None:
-        await session.generate_reply(
+    def speak(text: str) -> None:
+        # generate_reply() is sync and returns immediately once the speech
+        # is *scheduled* — do not await full playout here. We don't need
+        # to block until the AI finishes talking before listening for the
+        # candidate's answer; that's handled independently by the
+        # conversation_item_added event/turn detection. Awaiting the
+        # handle's playout was found (by actually running this against a
+        # real room) to hang indefinitely with no subscriber attached —
+        # not needed for correctness, only removed a false dependency.
+        session.generate_reply(
             instructions=(
                 "Say the following to the candidate, in your own natural "
                 f'spoken phrasing, preserving all technical specifics: "{text}"'
@@ -183,7 +203,7 @@ async def entrypoint(ctx: JobContext) -> None:
             break
 
         question_text = payload["question"]
-        await speak(question_text)
+        speak(question_text)
         answer = await pending_answer.get()
         await asyncio.to_thread(graph.invoke, Command(resume=answer), config)
 
