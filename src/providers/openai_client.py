@@ -57,10 +57,45 @@ def structured_completion(
     """Call GPT with a strict JSON schema response format and return parsed JSON.
 
     Uses OpenAI structured outputs so we never depend on parsing free-form
-    prose out of the model's reply.
+    prose out of the model's reply. Thin wrapper over
+    structured_completion_with_usage() for callers that don't need usage
+    metrics (kept so existing agents don't need to change).
+    """
+    parsed, _usage = structured_completion_with_usage(
+        system_prompt=system_prompt,
+        user_content=user_content,
+        json_schema=json_schema,
+        schema_name=schema_name,
+        model=model,
+        temperature=temperature,
+    )
+    return parsed
+
+
+def structured_completion_with_usage(
+    *,
+    system_prompt: str,
+    user_content: str,
+    json_schema: dict[str, Any],
+    schema_name: str,
+    model: str = DEFAULT_MODEL,
+    temperature: float = 0.2,
+    prompt_cache_key: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Same as structured_completion(), but also returns a usage dict:
+    {"input_tokens", "cached_tokens", "output_tokens"} — for prompt-caching
+    observability (see src/agents/cache_metrics.py). `system_prompt` should
+    be the STABLE part of the request (put it first, keep it byte-identical
+    across calls) for it to actually be eligible for prompt caching;
+    `user_content` is the dynamic per-call suffix.
+
+    `prompt_cache_key` groups requests for cache routing purposes (OpenAI
+    Chat Completions param). It must never contain candidate-specific
+    content (e.g. the answer text) — pass something like
+    "interview-evaluator-v1" or "interview-evaluator-v1:{role_hash}".
     """
     client = get_client()
-    response = client.chat.completions.create(
+    kwargs: dict[str, Any] = dict(
         model=model,
         temperature=temperature,
         messages=[
@@ -76,5 +111,26 @@ def structured_completion(
             },
         },
     )
+    if prompt_cache_key:
+        kwargs["prompt_cache_key"] = prompt_cache_key
+
+    response = client.chat.completions.create(**kwargs)
     content = response.choices[0].message.content
-    return json.loads(content)
+    parsed = json.loads(content)
+
+    usage = response.usage
+    cached_tokens = 0
+    input_tokens = 0
+    output_tokens = 0
+    if usage is not None:
+        input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+        output_tokens = getattr(usage, "completion_tokens", 0) or 0
+        details = getattr(usage, "prompt_tokens_details", None)
+        if details is not None:
+            cached_tokens = getattr(details, "cached_tokens", 0) or 0
+
+    return parsed, {
+        "input_tokens": input_tokens,
+        "cached_tokens": cached_tokens,
+        "output_tokens": output_tokens,
+    }

@@ -1,8 +1,13 @@
 # \Easy Interviewer
 
-Status: **Phase 1 (PREP pipeline) complete.** Live interview, LangGraph
-controller, avatar, LiveKit transport, MCP server, and scoring are not
-built yet — see `ARCHITECTURE.md` for what's implemented vs. planned.
+Status: **Phase 1 (PREP), Phase 2 (LangGraph controller), and Phase 3
+(Gemini Live + LiveKit live call) are implemented.** Final competency
+scoring, PDF report, and MCP server are not built yet — see
+`ARCHITECTURE.md` for the exact implemented/not-implemented breakdown and
+what's live-verified vs. not (short version: every individual piece is
+verified against real credentials; a full continuous real-human call
+through the browser has not been run in this environment — no mic/
+speaker/browser here).
 
 ## What this phase does
 
@@ -104,22 +109,49 @@ all run against `MockRealtimeAdapter` — no live API calls, no cost. A real
 Gemini Live/LiveKit adapter plugs into the same interface in the next
 phase without any change to the graph.
 
+## Run the live call (Phase 3)
+
+Real candidate-facing audio interview: Gemini Live speaks/listens,
+LiveKit transports the audio, GPT evaluates every answer, LangGraph
+decides what happens next. Requires 5 steps, in order:
+
+```bash
+python run_prep.py                                              # 1. generate jd/resume/github/question_plan
+python run_hitl_approval.py --interview-id demo-001 approve     # 2. recruiter HITL gate — graph genuinely pauses until this runs
+uvicorn src.api:app --reload --port 8000                        # 3. backend (consent + LiveKit token minting)
+python livekit_agent/interview_worker.py dev                    # 4. the AI's side (separate process)
+```
+5. Open `frontend/candidate.html?interview_id=demo-001` in a browser,
+   read + agree to the consent statement, click **Join interview**.
+
+See `ARCHITECTURE.md`'s "What's verified vs. not" table for exactly what
+has and hasn't been confirmed working — every backend piece (LiveKit room/
+token, Gemini Live audio+transcription+session-resumption, the GPT
+evaluator, and all of them wired together for at least one real turn) was
+independently verified live during development; the one thing that
+genuinely requires you to run it is the full continuous call through a
+real browser with a microphone, since this environment has none.
+
 ## Tests
 
 ```bash
-pytest                          # fast tests only (no API calls), 46 tests
-RUN_LIVE_TESTS=1 pytest         # also exercises real GPT + GitHub calls
+pytest                          # fast tests only (no API calls), ~57 tests
+RUN_LIVE_TESTS=1 pytest         # also exercises real GPT/GitHub/LiveKit/Gemini Live calls
 ```
 
 Fast tests cover: module imports, PDF text extraction, the GitHub-grounding
-guardrail, output-path/schema conformance, and the full LangGraph
-controller — graph compilation, normal progression, adaptive routing
-(shallow/strong/bluff/off_topic/silence), the 2-follow-up cap, HITL
-approve/edit/reject, SQLite checkpoint + dropped-call recovery, invalid
-GPT-output normalization, deterministic routing, and the banned-question
-guardrail (`tests/test_graph.py`). Live tests (skipped by default, marked
-`@pytest.mark.live`) call the real JD parser, resume parser, GitHub agent,
-and full PREP pipeline end to end.
+guardrail, output-path/schema conformance, the full LangGraph
+controller (graph compilation, normal progression, adaptive routing,
+2-follow-up cap, HITL approve/edit/reject, SQLite checkpoint + dropped-call
+recovery, invalid-GPT-output normalization, deterministic routing,
+banned-question guardrail), the HITL approval CLI, the barge-in
+transcript-patch mechanism, the FastAPI consent/status endpoints, and
+worker-module construction. Live tests (skipped by default, marked
+`@pytest.mark.live`) call the real JD parser, resume parser, GitHub
+agent, full PREP pipeline, LiveKit room/token service, Gemini Live
+(audio synthesis + transcription + session resumption), the combined
+LangGraph+Gemini Live+GPT integration, GPT cache-metrics measurement, and
+the full FastAPI consent→token flow — all against real credentials.
 
 ## Project layout
 
@@ -128,25 +160,37 @@ src/
   config.py              env loading + key-presence checks (no secret printing)
   state.py                typed InterviewState (LangGraph schema)
   graph.py                StateGraph: nodes, conditional edges, SQLite checkpointer
+  api.py                  FastAPI backend: consent, LiveKit token minting, status
   providers/
-    openai_client.py      centralized GPT access (OpenRouter-backed), structured outputs
+    openai_client.py      centralized GPT access (OpenRouter-backed), structured
+                           outputs, prompt-cache-aware (prompt_cache_key, usage)
   agents/
-    jd_parser.py, resume_parser.py, github_agent.py,
-    gap_analysis.py, question_planner.py, evaluator.py
+    jd_parser.py, resume_parser.py, github_agent.py, gap_analysis.py,
+    question_planner.py, evaluator.py, cache_metrics.py
   nodes/                  one file per graph node (hitl_approval, intro,
-                           resume_probe/jd_fit/github_deepdive/scenario,
-                           evaluate_answer, candidate_questions, wrap_up, scoring)
+                           resume_probe/jd_fit/github_deepdive/scenario + their
+                           _wait nodes, evaluate_answer, candidate_questions,
+                           wrap_up, scoring)
   guardrails/
     banned_questions.py    deterministic banned-topic blocking
   realtime/
-    adapter.py             abstract RealtimeInterviewAdapter for Prompt 3
-    mock_adapter.py         scripted stand-in used by tests
-    session_runner.py       reference driver loop tying graph <-> adapter
+    adapter.py             abstract RealtimeInterviewAdapter (used by tests)
+    mock_adapter.py         scripted stand-in used by graph tests
+    session_runner.py       sync driver loop (mock adapter / graph tests)
+    livekit_room.py         real LiveKit room creation + token minting
+    gemini_live_adapter.py  Gemini Live session config (model, voice,
+                             session resumption, context compression)
+livekit_agent/
+  interview_worker.py     LiveKit Agents worker — the real candidate-facing
+                           audio interview (Gemini Live <-> LangGraph bridge)
+frontend/
+  candidate.html          consent + join + minimal 2D avatar (SVG, speaking-state lip-sync)
 prompts/                  every system prompt as its own file + ITERATION_NOTES.md
 tests/                    pytest suite (fast + live-marked)
 inputs/                   jd.txt, resume.pdf (currently synthetic test fixtures)
 output/prep/              generated PREP outputs (fixed paths, graded)
 run_prep.py               PREP pipeline entrypoint
+run_hitl_approval.py      recruiter HITL approve/edit/reject CLI
 ```
 
 ## Known limitations
@@ -159,8 +203,14 @@ Phase 1 (PREP):
   in the real candidate's resume/GitHub before the graded interview.
 
 Phase 2 (LangGraph controller):
-- Not wired to real audio/Gemini Live/LiveKit yet — see `ARCHITECTURE.md`
-  for the full list, including the LangGraph `interrupt()` replay gotcha
-  this phase surfaced and how it was fixed.
 - `scoring` is a stub node (status/timing only) — real competency scoring
   is a later phase.
+- See `ARCHITECTURE.md` for the LangGraph `interrupt()` replay gotcha this
+  phase surfaced and how it was fixed.
+
+Phase 3 (live call): see `ARCHITECTURE.md`'s "What's verified vs. not"
+table — short version: every individual piece (LiveKit, Gemini Live, GPT,
+LangGraph) is live-verified against real credentials and proven to work
+together for at least one real turn; a full continuous real-human call
+through the browser frontend has not been run in this environment (no
+mic/speaker/browser here) and needs you to run it once to fully confirm.

@@ -1,0 +1,12 @@
+{"timestamp_ms": 1786701985138, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1073, "cached_tokens": 0, "output_tokens": 57, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786701986991, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1075, "cached_tokens": 0, "output_tokens": 49, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786701988372, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1070, "cached_tokens": 0, "output_tokens": 39, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786702732282, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1299, "cached_tokens": 0, "output_tokens": 55, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786703263093, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1073, "cached_tokens": 0, "output_tokens": 60, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786703264429, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1075, "cached_tokens": 0, "output_tokens": 49, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786703265642, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1070, "cached_tokens": 0, "output_tokens": 39, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786703282377, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1299, "cached_tokens": 0, "output_tokens": 51, "cache_hit_ratio": 0.0}
+{"timestamp_ms": 1786703428360, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1073, "cached_tokens": 1024, "output_tokens": 60, "cache_hit_ratio": 0.9543}
+{"timestamp_ms": 1786703429542, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1075, "cached_tokens": 1024, "output_tokens": 49, "cache_hit_ratio": 0.9526}
+{"timestamp_ms": 1786703430690, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1070, "cached_tokens": 1024, "output_tokens": 39, "cache_hit_ratio": 0.957}
+{"timestamp_ms": 1786703445941, "model": "openai/gpt-4o-mini", "purpose": "answer_evaluation", "input_tokens": 1299, "cached_tokens": 1024, "output_tokens": 55, "cache_hit_ratio": 0.7883}

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>FirstRound Interview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 640px; margin: 40px auto; padding: 0 20px;
+    background: #0f1115; color: #e8e8ea;
+  }
+  h1 { font-size: 1.3rem; }
+  .card { background: #1a1d24; border: 1px solid #2a2e38; border-radius: 12px; padding: 24px; margin-top: 16px; }
+  label { display: block; margin: 12px 0 4px; font-size: 0.9rem; color: #b7bcc7; }
+  input[type=text] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #0f1115; color: #eee; box-sizing: border-box; }
+  button { margin-top: 16px; padding: 10px 18px; border-radius: 8px; border: none; background: #4f7cff; color: white; font-weight: 600; cursor: pointer; }
+  button:disabled { background: #3a3f4b; cursor: not-allowed; }
+  .consent-text { font-size: 0.9rem; line-height: 1.5; color: #cfd3db; background: #14161c; padding: 14px; border-radius: 8px; }
+  .hidden { display: none; }
+  #avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; }
+  #status-line { font-size: 0.85rem; color: #9aa1ad; }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; background: #262a34; color: #b7bcc7; }
+</style>
+</head>
+<body>
+  <h1>FirstRound — AI Video Interview</h1>
+
+  <div id="step-consent" class="card">
+    <p>Before we begin, please read and agree to the following:</p>
+    <p class="consent-text" id="consent-text">Loading consent statement…</p>
+    <label>Your name</label>
+    <input type="text" id="candidate-name" placeholder="Full name" />
+    <label style="display:flex; align-items:center; gap:8px; margin-top:14px;">
+      <input type="checkbox" id="consent-checkbox" style="width:auto;" />
+      I have read and agree to the statement above.
+    </label>
+    <button id="consent-continue" disabled>Continue</button>
+  </div>
+
+  <div id="step-join" class="card hidden">
+    <p>Ready to join, <span id="join-name"></span>. Make sure your microphone is enabled.</p>
+    <button id="join-button">Join interview</button>
+  </div>
+
+  <div id="step-call" class="card hidden">
+    <div id="avatar-wrap">
+      <svg id="avatar-svg" width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="66" fill="#2b3040" stroke="#4f7cff" stroke-width="3"/>
+        <circle cx="48" cy="58" r="7" fill="#e8e8ea"/>
+        <circle cx="92" cy="58" r="7" fill="#e8e8ea"/>
+        <path id="avatar-mouth" d="M 45 92 Q 70 92 95 92" stroke="#e8e8ea" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="pill" id="agent-state-pill">connecting…</div>
+    </div>
+    <p id="status-line"></p>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin.includes("5500") || window.location.protocol === "file:"
+      ? "http://localhost:8000" : ""; // adjust if backend runs on a different host/port
+    const interviewId = new URLSearchParams(window.location.search).get("interview_id") || "demo-001";
+
+    const consentText = document.getElementById("consent-text");
+    const consentCheckbox = document.getElementById("consent-checkbox");
+    const consentContinue = document.getElementById("consent-continue");
+    const candidateNameInput = document.getElementById("candidate-name");
+
+    fetch(`${API_BASE}/interviews/${interviewId}/consent-statement`)
+      .then(r => r.json())
+      .then(d => { consentText.textContent = d.statement; })
+      .catch(() => { consentText.textContent = "Could not load consent statement — is the backend running (uvicorn src.api:app)?"; });
+
+    function updateContinueEnabled() {
+      consentContinue.disabled = !(consentCheckbox.checked && candidateNameInput.value.trim().length > 0);
+    }
+    consentCheckbox.addEventListener("change", updateContinueEnabled);
+    candidateNameInput.addEventListener("input", updateContinueEnabled);
+
+    consentContinue.addEventListener("click", async () => {
+      const name = candidateNameInput.value.trim();
+      const resp = await fetch(`${API_BASE}/interviews/${interviewId}/consent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidate_name: name, agree: true }),
+      });
+      if (!resp.ok) {
+        alert("Could not record consent: " + (await resp.text()));
+        return;
+      }
+      document.getElementById("step-consent").classList.add("hidden");
+      document.getElementById("step-join").classList.remove("hidden");
+      document.getElementById("join-name").textContent = name;
+    });
+
+    document.getElementById("join-button").addEventListener("click", async () => {
+      const name = candidateNameInput.value.trim();
+      const statusLine = document.getElementById("status-line");
+      const pill = document.getElementById("agent-state-pill");
+      document.getElementById("step-join").classList.add("hidden");
+      document.getElementById("step-call").classList.remove("hidden");
+
+      let tokenResp;
+      try {
+        tokenResp = await fetch(`${API_BASE}/interviews/${interviewId}/token?candidate_name=${encodeURIComponent(name)}`);
+      } catch (e) {
+        statusLine.textContent = "Could not reach backend: " + e;
+        return;
+      }
+      if (!tokenResp.ok) {
+        statusLine.textContent = "Could not get a join token: " + (await tokenResp.text());
+        return;
+      }
+      const { token, livekit_url } = await tokenResp.json();
+
+      const room = new LivekitClient.Room();
+      await room.prepareConnection(livekit_url, token);
+
+      room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+        if (track.kind === "audio") {
+          const el = track.attach();
+          document.body.appendChild(el);
+        }
+      });
+      room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, (speakers) => {
+        const aiSpeaking = speakers.some(p => !p.isLocal);
+        setMouthOpen(aiSpeaking);
+        pill.textContent = aiSpeaking ? "AI speaking" : "listening";
+      });
+      room.on(LivekitClient.RoomEvent.Disconnected, () => {
+        statusLine.textContent = "Disconnected. Reconnecting is handled by the interview worker's session resumption — try rejoining if this persists.";
+      });
+
+      await room.connect(livekit_url, token);
+      await room.localParticipant.setMicrophoneEnabled(true);
+      pill.textContent = "connected — waiting for AI";
+      statusLine.textContent = "You're live. Interrupt the AI at any time by just speaking — it will stop and listen.";
+    });
+
+    function setMouthOpen(open) {
+      const mouth = document.getElementById("avatar-mouth");
+      mouth.setAttribute("d", open
+        ? "M 45 88 Q 70 108 95 88"   // open mouth (very simple viseme: closed <-> open, driven by AI speaking state)
+        : "M 45 92 Q 70 92 95 92");  // closed mouth
+    }
+  </script>
+</body>
+</html>

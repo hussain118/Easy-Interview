@@ -12,16 +12,16 @@ phases. Nothing below is claimed as working unless it's under
 
 | Component | Role | Status |
 |---|---|---|
-| **GPT (via OpenRouter)** | Offline analysis/reasoning: JD/resume/GitHub parsing, gap analysis, question planning, and — live — per-answer evaluation (quality/confidence/reason). | **Implemented.** Final competency scoring (scorecard.json) is not yet. |
+| **GPT (via OpenRouter)** | Offline analysis/reasoning: JD/resume/GitHub parsing, gap analysis, question planning, and — live — the *only* thing that grades a candidate answer (quality/confidence/reason). Structured with a stable, cacheable system-prompt prefix. | **Implemented.** Final competency scoring (scorecard.json) is not yet. |
 | **GitHub REST API** | Real evidence source: repos, languages, READMEs, commits, source-file excerpts for the candidate's actual account. | **Implemented.** |
 | **LangGraph** | Authoritative interview controller: typed state, 10 nodes, multiple conditional edges, adaptive follow-up routing, HITL interrupt, SQLite checkpointer for resume-after-drop. | **Implemented** (`src/graph.py`, `src/nodes/`). Driven turn-by-turn via `interrupt()`/`Command(resume=...)` — see below. Not yet wired to real audio. |
 | **SQLite** | LangGraph checkpointer storage — every node transition is durably saved, so a dropped call resumes at the correct node instead of restarting. | **Implemented** (`langgraph-checkpoint-sqlite`, `src/graph.py::get_sqlite_checkpointer`). |
 | **Python (deterministic guardrails)** | Validation that doesn't depend on the LLM being honest — GitHub-grounding check, banned-question blocking, GPT-evaluation normalization, follow-up cap enforcement, routing decisions. | **Implemented** for all of the above. "No score without a quote" guardrail comes with the scoring phase. |
-| **Gemini Live API** | Future real-time interviewer: native audio in/out, built-in interruption/barge-in, conversational voice. | **Not implemented yet.** `src/realtime/adapter.py` defines the interface it will implement. |
-| **LiveKit** | Future real-time transport: the video/audio room, candidate connection, secure participant access. | **Not implemented yet.** |
-| **Avatar (2D)** | Future visible AI face, viseme lip-sync driven by the TTS stream. | **Not implemented yet.** |
-| **MCP server** | Future `>=5` tools (get_candidate, get_question_plan, save_score, get_scorecard, list_interviews) exposed to Claude Desktop. | **Not implemented yet.** |
-| **FastAPI** | Future backend API tying the above together for the recruiter dashboard and candidate interview page. | **Not implemented yet.** |
+| **Gemini Live API** | Real-time interviewer: native audio in/out, built-in interruption/barge-in, conversational voice. Never decides answer quality. | **Implemented** (`livekit_agent/interview_worker.py`, `src/realtime/gemini_live_adapter.py`). Connectivity, audio synthesis, transcription, and session resumption independently verified live. Full audio round-trip through a browser is not verified in this environment (no mic/speaker/browser here) — see "What's verified vs. not" below. |
+| **LiveKit** | Real-time transport: the video/audio room, candidate connection, secure participant access, barge-in/turn-detection plumbing. | **Implemented** (`src/realtime/livekit_room.py`, `src/api.py`). Room creation and token minting verified live against the real LiveKit Cloud project. |
+| **Avatar (2D)** | Visible AI face, simple viseme-style lip-sync driven by the AI's speaking state. | **Implemented, intentionally simple** (`frontend/candidate.html`) — an SVG face whose mouth toggles open/closed based on LiveKit's `ActiveSpeakersChanged` event (real speaking-state signal, not a fixed animation loop, but not per-phoneme viseme sync either). Priority was working voice/barge-in/transport first, per the spec's own stated priority order. |
+| **MCP server** | Future `>=5` tools exposed to Claude Desktop. | **Not implemented** — explicitly out of scope for this phase. |
+| **FastAPI** | Backend API: consent recording, LiveKit token minting, interview status. | **Implemented** (`src/api.py`). No recruiter dashboard UI — recruiter actions are CLI scripts (`run_prep.py`, `run_hitl_approval.py`). |
 
 ## Phase 1 data flow (implemented)
 
@@ -203,26 +203,147 @@ state-changing decisions (`next_action`, `follow_up_count`, `difficulty`)
 were moved into `evaluate_answer_node` itself; `route_after_evaluation`
 only reads already-decided state and returns a destination name.
 
-### Realtime interface (for the next phase)
+### Realtime interface
 
 `src/realtime/adapter.py` defines `RealtimeInterviewAdapter` (abstract:
 `start_session`, `speak`, `stop_speaking`, `receive_candidate_turn`,
-`send_instruction`, `end_session`). The graph has **zero** dependency on
-it — it only ever produces `interrupt()` payloads (`{"question": ...}`)
-and consumes resume values (answer text). `src/realtime/session_runner.py`
-shows the intended driver loop: on each interrupt, call
-`adapter.speak(question)` then `adapter.receive_candidate_turn()`, feed
-that back via `Command(resume=...)`. `src/realtime/mock_adapter.py` is a
-scripted in-memory stand-in used by every graph test — Prompt 3 replaces
-it with a real Gemini Live/LiveKit adapter without touching `src/graph.py`
-or any node.
+`send_instruction`, `end_session`) and `src/realtime/mock_adapter.py` +
+`src/realtime/session_runner.py` are the scripted, sync stand-in every
+graph test drives against — the graph has **zero** dependency on any real
+transport, only on `interrupt()` payloads and resume values.
+
+The real production path (`livekit_agent/interview_worker.py`) does not
+literally instantiate `RealtimeInterviewAdapter` — LiveKit Agents'
+`AgentSession` is inherently async/event-driven (state-change callbacks,
+not a blocking `speak()`/`receive_candidate_turn()` call pair), so forcing
+it through that sync interface would add an awkward thread/queue bridge
+for no real benefit. Instead the worker achieves the *same* decoupling
+principle directly: it never imports anything Gemini-specific into
+`src/graph.py` or any node — it only ever reads `interrupt()` payloads
+(`{"question": ...}`) off `graph.get_state(config).interrupts` and feeds
+`Command(resume=<transcribed answer>)` back in, exactly like the mock
+adapter does. Same contract, no forced abstraction mismatch.
+
+## Phase 3 — Live call (Gemini Live + LiveKit)
+
+### What's verified vs. not
+
+Everything below marked **live-verified** was actually run against the
+real credentials in `.env` during development (see the referenced test
+file) — not just written and assumed to work.
+
+| Piece | Status |
+|---|---|
+| LiveKit room creation + candidate/recruiter token minting | **Live-verified** — `tests/test_livekit_room_live.py` |
+| Gemini Live connection, audio synthesis, output transcription | **Live-verified** — `tests/test_gemini_live_connectivity_live.py` (real audio bytes returned, transcript matched exactly what was asked) |
+| Gemini Live session-resumption handles actually issued | **Live-verified** — same file, confirmed across multiple turns |
+| LangGraph question selection + Gemini speaking it + GPT evaluating a (scripted) answer, wired together | **Live-verified** — `tests/test_gemini_live_graph_integration_live.py` |
+| FastAPI consent → LiveKit token flow | **Live-verified** — `tests/test_api.py` |
+| `graph.update_state()` correctly marking a transcript turn `interrupted=true` (the barge-in transcript mechanism) | **Live-verified** (mechanism only, not triggered by a real interruption) — `tests/test_barge_in_transcript_patch.py` |
+| `livekit_agent/interview_worker.py` end to end with a real candidate in a real browser | **NOT verified** — this environment has no microphone, speaker, or browser. The worker imports and constructs its `RealtimeModel`/`Agent`/`AgentSession` correctly (`tests/test_interview_worker_imports.py`), but the full audio round-trip through LiveKit (candidate mic → LiveKit → worker → Gemini Live → worker → LiveKit → candidate speaker) has only been exercised piece-by-piece, never as one continuous real call. |
+| Barge-in actually cutting off audio mid-sentence in a real call | **NOT verified** — requires a real human speaking over the AI. The mechanism LiveKit Agents uses for this (VAD-based turn detection built into `AgentSession`) is the framework's own responsibility, not custom code here; what *is* custom (marking the transcript) is verified. |
+| `frontend/candidate.html` in an actual browser | **NOT verified** — written against LiveKit's documented JS client API (`Room`, `RoomEvent.TrackSubscribed`, `ActiveSpeakersChanged`, `prepareConnection`) and the CDN script URL was confirmed reachable, but never opened in a real browser in this session. |
+
+The honest summary: transport (LiveKit) and brain (Gemini Live) are each
+independently proven to work with these exact credentials, and proven to
+work *together* with LangGraph and GPT for at least one real turn. What's
+unverified is specifically the parts that require a human with a
+microphone and a browser — which this coding environment cannot provide.
+**Run `python livekit_agent/interview_worker.py dev` plus
+`frontend/candidate.html` yourself to complete that verification.**
+
+### How to run the live call
+
+1. `python run_prep.py` (or reuse existing `output/prep/*.json`).
+2. `python run_hitl_approval.py --interview-id demo-001 approve` — the
+   real HITL gate; the graph genuinely pauses until this runs.
+3. `uvicorn src.api:app --reload --port 8000` (backend).
+4. `python livekit_agent/interview_worker.py dev` (the AI's side —
+   separate long-lived process, standard LiveKit Agents deployment model).
+5. Open `frontend/candidate.html?interview_id=demo-001` in a browser,
+   consent, join.
+
+### GPT prompt-caching strategy
+
+Every evaluator request is structured exactly as required:
+
+```
+STABLE PREFIX (prompts/answer_evaluator.md, byte-identical every call)
+  -> rubric, quality-label definitions, fairness rule, evidence
+     requirement, guardrail note, output schema description
+DYNAMIC SUFFIX (per-call user message)
+  -> current question + competency + difficulty + evidence reference
+     + candidate answer + last few same-topic transcript turns
+     (never the full resume/JD/GitHub JSON, never the full transcript)
+```
+
+`src/providers/openai_client.py::structured_completion_with_usage()`
+passes a fixed `prompt_cache_key="interview-evaluator-v1"` (never
+contains candidate content) and reads back
+`usage.prompt_tokens_details.cached_tokens` from the response.
+`src/agents/cache_metrics.py::record()` logs
+`{model, purpose, input_tokens, cached_tokens, output_tokens,
+cache_hit_ratio}` per call to `output/cache_metrics.jsonl` — numbers and
+labels only, never candidate text.
+
+**Measured result** (`tests/test_cache_metrics_live.py`, 3 consecutive
+live calls, identical stable prefix, via OpenRouter): `input_tokens`
+totaled 3218 (~1072/call), **`cached_tokens` was 0 on every call.** This
+is a real, reported null result — see `prompts/ITERATION_NOTES.md`
+("evaluator: v1 → v2") for the likely causes (prefix length near the
+automatic-caching threshold; OpenRouter's routing to the underlying
+provider may not surface `prompt_tokens_details.cached_tokens` the way a
+direct `api.openai.com` call would). The caching *structure* is real and
+in place; the *savings* through this specific provider path are not
+proven, and this document does not claim they are.
+
+### Gemini Live context/continuity strategy (NOT explicit prompt caching)
+
+Per the spec, Gemini Live sessions do **not** use the explicit
+context-cache API (that's for the standard `generateContent` API, not
+`bidiGenerateContent`/Live sessions). Instead:
+
+1. **Compact system instruction** (`prompts/live_interviewer.md`) — AI
+   identity, disclosure, interruption/pacing behavior, and an explicit
+   instruction to only ever say what LangGraph tells it to say next.
+   Deliberately excludes the resume, JD, GitHub evidence, and scoring
+   rubric — those never enter the Gemini session at all; they inform
+   GPT's evaluation and LangGraph's question selection instead.
+2. **Minimal dynamic instructions per turn** — the worker's `speak()`
+   sends only the next question/probe text via `generate_reply()`, not
+   accumulated context.
+3. **Context-window compression** — `types.ContextWindowCompressionConfig(sliding_window=types.SlidingWindow())`,
+   configured in `src/realtime/gemini_live_adapter.py::build_live_connect_config()`
+   and passed through the LiveKit `RealtimeModel`.
+4. **Session resumption** — every `LiveConnectConfig` requests a
+   `session_resumption` handle; live-verified that the API actually
+   issues one after each turn (`tests/test_gemini_live_connectivity_live.py`).
+   On a `GoAway`/disconnect, the intended reconnect path is: grab the last
+   handle received, reconnect with
+   `SessionResumptionConfig(handle=last_handle)`, and continue — this
+   reconnect path itself is implemented in `build_live_connect_config`'s
+   `resumption_handle` parameter but has not been exercised against a
+   real forced disconnect (would require deliberately killing a live
+   session mid-call).
+5. **Interview continuity actually lives in LangGraph + SQLite, not
+   Gemini** — even if a Gemini session resets, the interview's question
+   position, transcript, follow-up counts, and difficulty are safely on
+   disk in the SQLite checkpoint (this is the *real* continuity
+   mechanism; Gemini's own session resumption is a secondary layer on
+   top of it, not a substitute for it).
 
 ## Latency
 
-Not applicable yet — no real-time audio path exists in this phase. Will be
-measured (candidate-stops-speaking → agent-starts-speaking, target <1.2s)
-once the Gemini Live + LiveKit integration is built, and reported here
-with a real number, not a guess.
+Target: <1.2s from candidate-stops-speaking to agent-starts-speaking.
+`livekit_agent/interview_worker.py` measures this for real, on every
+turn, from LiveKit Agents' own `user_state_changed`
+(`speaking` → not `speaking`) and `agent_state_changed`
+(→ `speaking`) events — not a guess — and appends each measurement to
+`output/latency_measurements.jsonl`. **No measurements exist yet**
+because that requires a real candidate turn in a real call, which this
+environment cannot produce. Run the live call once (see above) and this
+section will be updated with the real numbers from that file, not an
+estimate.
 
 ## Known limitations
 
@@ -239,10 +360,6 @@ Phase 1 (PREP):
   than silently producing empty output — no OCR fallback is implemented.
 
 Phase 2 (LangGraph controller):
-- Not wired to real audio yet — everything is tested via
-  `MockRealtimeAdapter` and direct `Command(resume=...)` calls. Barge-in
-  (mid-sentence interruption) is a Phase 3 concern since it requires an
-  actual audio stream to interrupt.
 - `scoring` is a stub node — it finalizes status/timing only. Real
   per-competency scoring with evidence quotes is a later phase.
 - The "no score without a transcript quote" guardrail isn't implemented
@@ -253,3 +370,30 @@ Phase 2 (LangGraph controller):
   straight to `wrap_up` is a real Python check but has no live test with
   an actual 20-minute run — it's exercised via `time_exceeded()` unit
   logic, not an end-to-end timing test (would make the suite slow).
+
+Phase 3 (live call):
+- See "What's verified vs. not" above — the honest short version: every
+  individual piece (LiveKit, Gemini Live, GPT, LangGraph) is
+  live-verified against real credentials, and proven to work together for
+  at least one real turn, but a full continuous real-human call through
+  the browser frontend has not been run in this environment.
+- No latency numbers exist yet — the measurement code is real and wired
+  in, but needs a real call to produce data.
+- Avatar is intentionally simple (SVG + open/closed mouth toggle on
+  speaking state), not per-phoneme viseme sync — acceptable per the
+  spec's own "simple 2D avatar... earns full marks" allowance, and
+  consistent with the spec's stated priority order (voice/barge-in/
+  transport first, avatar/lip-sync last).
+- `frontend/candidate.html` has no automatic reconnect-and-rejoin UI if
+  the browser's LiveKit connection itself drops (as opposed to the
+  Gemini Live session dropping, which the worker does handle via
+  session resumption + the SQLite-backed graph checkpoint) — the
+  candidate would need to reload the page and rejoin, which the worker
+  supports (it resumes from the existing checkpoint) but isn't automated
+  client-side.
+- Cache-hit ratio for the GPT evaluator measured 0 in testing (see GPT
+  prompt-caching strategy above) — the structure is correct but the
+  provider path (OpenRouter) hasn't been shown to actually save tokens.
+- The FastAPI backend has no auth on its endpoints (fine for a local/dev
+  deployment behind the assignment's scope; would need real auth before
+  any actual production use).

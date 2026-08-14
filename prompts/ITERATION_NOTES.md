@@ -63,30 +63,55 @@ guardrail is what actually enforces the requirement.
 
 ---
 
-## evaluator: v1
+## evaluator: v1 → v2 (`answer_evaluator.md`)
 
-`prompts/evaluator_v1.md` classifies a single candidate answer into
-`strong|good|shallow|bluff|off_topic|unclear` plus a confidence/reason.
-Deliberately scoped narrow: it receives only the current question,
-competency, difficulty, the evidence reference the question was grounded
-in, the candidate's answer, and a few recent prior turns on the same
-topic — never the full resume/JD/GitHub JSON — both to keep tokens down
-and because sending the whole GitHub evidence blob would let the model
-"grade" against evidence the candidate never demonstrated in *this*
-answer.
+**v1** (`prompts/evaluator_v1.md`) classified a single candidate answer
+into `strong|good|shallow|bluff|off_topic|unclear` plus a
+confidence/reason, scoped to only the current question/competency/
+difficulty/evidence-reference/answer/prior-turns — never the full
+resume/JD/GitHub JSON. That scoping decision was right and carried
+forward unchanged into v2.
 
-One explicit instruction worth calling out since it's easy to get wrong:
-the prompt tells the model its `recommended_action` is only a suggestion
-the system "may not follow literally." This is intentional — routing is
-decided in Python (`src/nodes/evaluate_answer.py`) purely from the
-validated `quality` enum, never from `recommended_action`, per the spec's
-"do not let arbitrary LLM text directly select a graph node" requirement.
-`test_routing_ignores_recommended_action_uses_quality_only` asserts this
-directly (quality=good + recommended_action=follow_up still advances).
-Still v1 — no live-traffic diagnosed failure yet to justify a v2; all
-graph tests mock this call, so its real-world calibration (e.g. is
-"nervous but correct" reliably scored near "strong" per persona #5 in
-§9?) is unverified until the eval-personas phase.
+**What v1 got wrong, diagnosed while adding prompt-caching support**: the
+realtime phase requires calling the evaluator once per candidate answer,
+many times per interview, and the spec requires structuring those calls
+so the system-prompt portion is a stable, cacheable prefix (identical
+bytes across calls) with only the per-turn content varying. v1's system
+prompt was short (a few short paragraphs, ~250 words) — nowhere near
+OpenAI's ~1024-token minimum for automatic prompt caching to engage even
+in principle, and it didn't spell out the rubric/fairness/evidence rules
+in enough structural detail to be confident the model was applying them
+consistently call to call.
+
+**What changed in v2** (`prompts/answer_evaluator.md`): expanded the
+system prompt into explicit labeled sections — quality-label definitions,
+a dedicated "fairness rule" section (nervous-but-correct must score on
+technical content, not delivery; confident-but-wrong is still bluff), an
+"evidence requirement" section, a guardrail note (evaluator never writes
+candidate-facing text or picks the graph edge), and an explicit output
+contract — long enough to be a meaningful, cacheable prefix, and
+structurally clearer for the model to follow. `src/agents/evaluator.py`
+now calls `structured_completion_with_usage()` with a fixed
+`prompt_cache_key="interview-evaluator-v1"` (never includes the answer
+text) and logs `{input_tokens, cached_tokens, output_tokens}` via
+`src/agents/cache_metrics.py` after every call.
+
+**Measured result** (`tests/test_cache_metrics_live.py`, 3 consecutive
+live calls with the byte-identical v2 system prompt, run through
+OpenRouter): `input_tokens` totaled 3218 (~1072/call), **`cached_tokens`
+was 0 on every call**. Honest reading: this is a real, measured null
+result, not a success — most likely because (a) ~1072 tokens/call is
+right at or under the threshold where automatic caching reliably engages,
+and/or (b) OpenRouter's routing to the underlying provider may not
+preserve or surface `prompt_tokens_details.cached_tokens` the way calling
+`api.openai.com` directly would. The caching *plumbing* (stable-prefix
+structuring, `prompt_cache_key`, usage logging) is real and in place;
+whether it actually saves tokens through this specific provider path is
+unproven and documented as such in `ARCHITECTURE.md` rather than assumed.
+`test_routing_ignores_recommended_action_uses_quality_only` still confirms
+the separate, load-bearing behavior carried over from v1: routing reads
+only the validated `quality` enum, never the model's free-text
+`recommended_action`.
 
 ---
 
